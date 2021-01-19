@@ -1,0 +1,11 @@
+[Scheme]
+Name=QXDC-Material-Dark
+Name[pt_BR]=QXDC-Material-Dark
+ColorCursor=#bababdbdb6b6
+ColorForeground=#d3d3d7d7cfcf
+ColorBackground=#212121212121
+ColorPalette=rgb(0,0,0);rgb(240,113,120);rgb(195,232,141);rgb(255,203,107);rgb(130,170,255);rgb(199,146,234);rgb(137,221,255);rgb(255,255,255);rgb(84,84,84);rgb(240,113,120);rgb(195,232,141);rgb(255,203,107);rgb(130,170,255);rgb(199,146,234);rgb(137,221,255);rgb(255,255,255)
+ScrollingBar=TERMINAL_SCROLLBAR_NONE
+ScrollingLines=2000
+ColorCursorUseDefault=FALSE
+ColorCursorForeground=#bababdbdb6b6

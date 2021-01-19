@@ -1,0 +1,50 @@
+#------------------------------------------------------------------------------#
+#                   OFFICIAL DEBIAN REPOS
+#------------------------------------------------------------------------------#
+
+###### Debian Main Repos
+deb http://deb.debian.org/debian/ unstable main contrib non-free
+deb-src http://deb.debian.org/debian/ unstable main contrib non-free
+
+#------------------------------------------------------------------------------#
+#                      UNOFFICIAL  REPOS
+#------------------------------------------------------------------------------#
+
+###### 3rd Party Binary Repos
+###Atom Editor
+deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main
+
+###Debian Multimedia
+deb [arch=amd64,i386] http://www.deb-multimedia.org sid main non-free
+
+###Google Chrome Browser
+deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
+
+###MEGA Sync Client
+deb http://mega.nz/linux/MEGAsync/Debian_9.0/ ./
+
+###Nextcloud Client
+deb [arch=amd64,i386] http://download.opensuse.org/repositories/home:/ivaradi/Debian_9.0/ /
+
+###Paper GTK Theme
+deb http://ppa.launchpad.net/snwh/pulp/ubuntu yakkety main
+deb-src http://ppa.launchpad.net/snwh/pulp/ubuntu yakkety main
+
+###Papirus GTK Theme
+deb http://ppa.launchpad.net/papirus/papirus/ubuntu artful main
+deb-src http://ppa.launchpad.net/papirus/papirus/ubuntu bionic main
+
+###PostgreSQL
+deb [arch=amd64,i386] http://apt.postgresql.org/pub/repos/apt/ sid-pgdg main
+
+###Skype
+deb [arch=amd64] https://repo.skype.com/deb stable main
+
+###Spotify
+deb http://repository.spotify.com stable non-free
+
+###Steam
+deb [arch=i386,amd64] http://repo.steampowered.com/steam/ precise steam
+
+###Teamviewer
+deb http://linux.teamviewer.com/deb stable main
