@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# author:     Luiz Quirino
+# since:       v0.0.1
+# created:   --/--/----
+# modified: --/--/----
 # 1. Add the Spotify repository signing keys to be able to verify downloaded packages
 #sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 931FF8E79F0876134EDDBDCCA87FF9DF48BF1C90
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 4773BD5E130D1D45

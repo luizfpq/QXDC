@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# author:     Luiz Quirino
+# since:       v0.0.1
+# created:   --/--/----
+# modified: --/--/----
 sudo mkdir  /lib/firmware/i915/
 sudo axel -n 5 -a https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/tree/i915/bxt_dmc_ver1.bin -o /lib/firmware/i915/
 sudo axel -n 5 -a https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/tree/i915/bxt_dmc_ver1_07.bin -o /lib/firmware/i915/

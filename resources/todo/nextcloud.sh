@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# author:     Luiz Quirino
+# since:       v0.0.1
+# created:   --/--/----
+# modified: --/--/----
 #em processo de criação
 
 installNextCloudClient() {

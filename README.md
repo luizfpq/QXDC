@@ -3,6 +3,12 @@
 ### Why?
 We already have so many mods and styles for our desktops, but I usually need to reinstall and reinvent my usability options, so I don't wanna use any of all disponible "refisefuquis"¹, I've most used it on Debian Stable, but it works on Xubuntu and most Debian derivatives with XFCE4.
 
+- From 2021-09 starts version control
+- From version 0.0.2 drop supports to XFCE 4.14
+
+## Supported Systems
+- Debian Stable (And based systems)
+- Arch Linux (And based systems)
 
 ### ScreenShots
 ![default_screenshot](resources/img/default_screenshot.png "Visualização de tela cheia")
