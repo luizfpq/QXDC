@@ -11,8 +11,8 @@ We already have so many mods and styles for our desktops, but I usually need to 
 - Arch Linux (And based systems)
 
 ### ScreenShots
-![default_screenshot](resources/img/default_screenshot.png "Visualização de tela cheia")
-![default_screenshot2](resources/img/default_screenshot2.png "Visualização de aplicações")
+![default_screenshot](https://qxdc.herokuapp.com/img/default_screenshot.png "Visualização de tela cheia")
+![default_screenshot2](https://qxdc.herokuapp.com/img/default_screenshot2.png "Visualização de aplicações")
 
 ##### Added itens
 
@@ -26,9 +26,7 @@ In resources/include/systemTools.sh and resources/include/installBaseApplication
 
 ##### View Install logs
 
-  If you wanna see the install logs report, just:
-
-      tail -f /tmp/QXDCinstall.log
+  If you wanna see the install logs report, just look into /tmp/qxdc/
 
 ###### Wordlists
 1 - Refisefuquis -> In portuguese "Release de Fim de Semana e Fundo de Quintal", on a literal translation "Release from Weekend and Backyard", in simple words, releases with no suport, no inovations and no proposits, just a homemade adventure for a develover with time and a computer available.
