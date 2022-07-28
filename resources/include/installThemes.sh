@@ -6,31 +6,22 @@
 # modified: 2021-09-11
 # 
 
+PKG_MANAGER=$(load packageManager)
+LOGFILE='/tmp/qxdc/installThemes.log'
+
+THEMES="arc-theme arc-icon-theme moka-icon-theme"
+
 installThemes() {
 clear
-  verifyIcons
-  verifyTheme
-}
 
-verifyTheme() {
-  if [ -e "/usr/share/themes/Arc-Dark" ]
-    then
-      echo " Tema já está instalado..."
-    else
-      echo " Instalando o tema..."
-      sudo apt install arc-theme
-    fi
-}
+  echo "Instalando temas e ícones..."
+  echo
+  echo
+  sudo apt-get update > /dev/null
+  for package in ${THEMES[@]}
+    do
+      echo -ne "Instalando $package  "
+      $PKG_MANAGER $package &>> $LOGFILE && echo -e "\xE2\x9C\x94" || echo -e "\xE2\x9D\x8C"
 
-verifyIcons() {
-  if [ -e "/usr/share/icons/Arc/" ]
-    then
-      echo " Os ícones já estão instalados..."
-    else
-      echo " Instalando os ícones..."
-      cd /tmp
-      git clone https://github.com/horst3180/arc-icon-theme --depth 1 && cd arc-icon-theme
-      ./autogen.sh --prefix=/usr
-      sudo make install
-    fi
+    done
 }

@@ -5,13 +5,13 @@
 # created:  ____-__-__
 # modified: 2021-09-11
 # 
-changeList() {
-  clear
 
-  OS=$(grep ID= /etc/os-release | sed 's/ID=//g' | tr -d '="')
+sourcesListChange() {
 
-  if [ $OS  ]; then
 
+  if [ "$DISTRO" == *"Debian"*   ]; then
+
+  echo "Sistema baseado em Debian detectado..."
   read -p "Deseja criar uma nova sources list? (S/N)? " -n 1 -r
 
   case "$REPLY" in
@@ -24,7 +24,7 @@ changeList() {
     n|N ) echo "Sua sources list não será alterada...\n continuando"
      ;;
       * ) echo "Invalido, tente novamente"
-          changeList
+
       ;;
   esac
 fi

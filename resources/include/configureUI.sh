@@ -5,6 +5,12 @@
 # created:  ____-__-__
 # modified: 2021-09-11
 # 
+
+
+WALLPAPER=$(xdg-user-dir PICTURES)/Wallpapers
+SCREENSHOT=$(xdg-user-dir PICTURES)/Screenshots
+
+
 configureUI() {
   clear
   read -p "Tecle S para aplicar as configurações de ambiente para o usuario atual ou qualquer outra tecla para não aplicar para nenhum... " -n 1 -r
@@ -13,9 +19,12 @@ configureUI() {
   case "$REPLY" in
     s|S )
           echo "Configurando XFCE para o usuario atual..."
-
-          mkdir $(xdg-user-dir PICTURES)/Wallpapers
-          mkdir $(xdg-user-dir PICTURES)/Screenshots
+          
+          
+        # Create forders if not exists 
+          [ ! -d $WALLPAPER ] && mkdir $WALLPAPER
+          [ ! -d $SCREENSHOT ] && mkdir $SCREENSHOT
+          
 
         # @todo create menu to select wallpaper
 
@@ -24,11 +33,12 @@ configureUI() {
           xfconf-query -c xsettings -p /Net/ThemeName -s "Arc-Dark"
           xfconf-query -c xsettings -p /Net/IconThemeName -s "Arc"
           xfconf-query -c xfwm4 -p /general/theme -s "Arc-Dark"
-          xfconf-query -c xfce4-desktop \
+          xfconf-query -c xfce4-desktop --create \
             -p /backdrop/screen0/monitor0/workspace0/last-image \
             -s  $(xdg-user-dir PICTURES)/Wallpapers/main.jpg
-          xfce4-panel --quit
-          pkill xfconfd
+            
+          #xfce4-panel --quit
+          #pkill xfconfd
           #tar -zxvf ./resources/dotfiles.tar.gz -C ~
           #VERSION=$(xfce4-about --version | grep 4.1)
           #if [[ $VERSION == *"4.14"* ]]; then
@@ -48,7 +58,7 @@ configureUI() {
           #@deprecated   rpl -R BASE_USERNAME $USER ~/.config
           #find ~/.config -type f -exec sed -i "s/BASE_USERNAME/$USER/g" {} +
 
-          xfce4-panel &
+          xfce4-panel --restart
      ;;
       * ) echo "Ignorando etapa..."   ;;
   esac

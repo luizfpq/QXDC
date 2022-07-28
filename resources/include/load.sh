@@ -6,6 +6,7 @@
 # modified: 2021-09-11
 # Load and exec a .sh file with a main command with same name
 
+
 load() {
     #if [ $2  ]; then
     #    echo "excesso de parametros"

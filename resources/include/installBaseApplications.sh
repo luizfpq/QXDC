@@ -9,13 +9,13 @@
 # mantenha atenção ao conjunto de pacotes da sua distribuição
 
 PKG_MANAGER=$(load packageManager)
-
+LOGFILE='/tmp/qxdc/installBaseApplications.log'
 
 APPLICATIONS="autoconf gvfs gvfs-bin gvfs-common gvfs-daemons gvfs-libs\
  libmtp-dev gvfs-backends apt-transport-https htop gnome-disk-utility apparmor asciinema \
  axel curl fonts-lyx galculator gimp inkscape\
- keepassxc lightning locate lsb-release menulibre neofetch net-tools software-properties-common\
-  thunderbird thunderbird-l10n-pt-br transmission-gtk unrar unzip "
+ keepassxc locate lsb-release menulibre neofetch net-tools software-properties-common\
+  transmission-gtk unrar unzip build-essential dkms fakeroot"
 
 verifyXFCE() {
   sudo dpkg -s task-xfce-desktop &> /dev/null
@@ -29,7 +29,7 @@ else
 
     case "$REPLY" in
       s|S )
-        $PKG_MANAGER task-xfce-desktop &>> /tmp/QXDCinstall.log && echo -e "\xE2\x9C\x94" && sudo reboot|| echo -e "\xE2\x9D\x8C"
+        $PKG_MANAGER task-xfce-desktop &>> $LOGFILE && echo -e "\xE2\x9C\x94" && sudo reboot|| echo -e "\xE2\x9D\x8C"
       ;;
     esac
 fi
@@ -47,7 +47,7 @@ installBaseApplications() {
   for application in ${APPLICATIONS[@]}
     do
       echo -ne "Instalando $application  "
-      $PKG_MANAGER $application &>> /tmp/QXDCinstall.log && echo -e "\xE2\x9C\x94" || echo -e "\xE2\x9D\x8C"
+      $PKG_MANAGER $application &>> $LOGFILE && echo -e "\xE2\x9C\x94" || echo -e "\xE2\x9D\x8C"
 
     done
 }
