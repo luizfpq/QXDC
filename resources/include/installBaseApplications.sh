@@ -13,9 +13,9 @@ PKG_MANAGER=$(load packageManager)
 
 APPLICATIONS="autoconf gvfs gvfs-bin gvfs-common gvfs-daemons gvfs-libs\
  libmtp-dev gvfs-backends apt-transport-https htop gnome-disk-utility apparmor asciinema \
- axel curl fonts-lyx galculator gimp inkscape\
+ axel curl fonts-lyx galculator gimp inkscape gtk-update-icon-cache\
  keepassxc lightning locate lsb-release menulibre neofetch net-tools software-properties-common\
-  thunderbird thunderbird-l10n-pt-br transmission-gtk unrar unzip "
+  thunderbird thunderbird-l10n-pt-br transmission-gtk unrar unzip"
 
 verifyXFCE() {
   sudo dpkg -s task-xfce-desktop &> /dev/null
