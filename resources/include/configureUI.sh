@@ -98,7 +98,7 @@ nord-xfce-terminal() {
 }
 
 installIcons() {
-  $PKG_MANAGER papirus-icon-theme &>> /tmp/QXDCinstall.log && echo -e "\xE2\x9C\x94" && sudo reboot|| echo -e "\xE2\x9D\x8C"
+  $PKG_MANAGER papirus-icon-theme &>> /tmp/QXDCinstall.log && echo -e "\xE2\x9C\x94" || echo -e "\xE2\x9D\x8C"
   # customize papiris
   #https://github.com/PapirusDevelopmentTeam/papirus-folders
   sudo wget -qO- https://git.io/papirus-folders-install | sh
