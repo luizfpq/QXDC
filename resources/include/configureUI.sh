@@ -113,42 +113,56 @@ configureUI() {
 
   case "$REPLY" in
     s|S )
-          echo "Configurando XFCE para o usuario atual..."
+          echo "Configurando XFCE"
 
-          mkdir $(xdg-user-dir PICTURES)/Wallpapers
-          mkdir $(xdg-user-dir PICTURES)/Screenshots
+          sudo mkdir /opt/qxdc
+          
+          
 
         # @todo create menu to select wallpaper
-        # download wallpaper from google, set as wallpaper and set as background          
-          wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=110nhzi77Xzc3amO81HHGQATe4_Mf3bSl' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=110nhzi77Xzc3amO81HHGQATe4_Mf3bSl" -O $(xdg-user-dir PICTURES)/Wallpapers/fernando-jorge-86GQxbFPjVE-unsplash && rm -rf /tmp/cookies.txt
+        # download wallpaper from google, set as wallpaper and set as background    
+          sudo mkdir /opt/qxdc/Wallpapers
+          wget --load-cookies /tmp/cookies.txt \
+          "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies\
+           --no-check-certificate 'https://docs.google.com/uc?export=download&id=110nhzi77Xzc3amO81HHGQATe4_Mf3bSl'\
+            -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=110nhzi77Xzc3amO81HHGQATe4_Mf3bSl"\
+             -O /opt/qxdc/Wallpapers/fernando-jorge-86GQxbFPjVE-unsplash && rm -rf /tmp/cookies.txt
+        #SET WALLPAPER
+          xfconf-query --channel xfce4-desktop --list | grep last-image | while read path; do
+              xfconf-query --channel xfce4-desktop --property $path --set /opt/qxdc/Wallpapers/fernando-jorge-86GQxbFPjVE-unsplash.jpg
+          done
+          
 
-          #axel -n 5 -a https://qxdc.herokuapp.com/Wallpapers/main.jpg -o $(xdg-user-dir PICTURES)/Wallpapers/main.jpg
-
-
-          #install icons
+          
           installIcons
 
 
           xfconf-query -c xsettings -p /Net/ThemeName -s "Arc-Dark"
-          xfconf-query -c xsettings -p /Net/IconThemeName -s "Arc"
+          xfconf-query -c xsettings -p /Net/IconThemeName -s "Papirus-Dark"
           xfconf-query -c xfwm4 -p /general/theme -s "Arc-Dark"
-          xfconf-query -c xfce4-desktop \
-            -p /backdrop/screen0/monitor0/workspace0/last-image \
-            -s  $(xdg-user-dir PICTURES)/Wallpapers/main.jpg
-          xfce4-panel --quit
-          pkill xfconfd
           
           
           VERSION=$(xfce4-about --version | grep 4.1)
           if [[ $VERSION == *"4.16"* ]]; then
-            rm -rf ~/.config/xfce4/*
-            cp -Rfv ./resources/dotfiles/* ~/
-          else
-            echo 'Versão não encontrada, usando definições para o Xfce 4.16'
-            rm -rf ~/.config/xfce4/*
-            cp -Rfv ./resources/dotfiles/* ~/
-            # @todo criar confirmação para prosseguir
+            mkdir /opt/qxdc/neofetch
+            cp -Rfv ./resources/dotfiles/neofetch ~/.config/
+            #image_source="auto"
+            image_source="/opt/qxdc/neofetch/img"
+
           fi
+
+
+          configurePanel
+
+
+          read -p "Press any key to resume ..."
+
+
+
+
+
+          xfce4-panel --quit
+          pkill xfconfd
 
           xfce4-panel &
      ;;
