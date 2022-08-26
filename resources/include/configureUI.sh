@@ -153,6 +153,7 @@ configureUI() {
 
 
           configurePanel
+          nord-xfce-terminal
 
 
           read -p "Press any key to resume ..."
