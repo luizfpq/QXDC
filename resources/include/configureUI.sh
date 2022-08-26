@@ -120,7 +120,7 @@ configureUI() {
 
         # @todo create menu to select wallpaper
         # download wallpaper from google, set as wallpaper and set as background          
-          wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=110nhzi77Xzc3amO81HHGQATe4_Mf3bSl' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=110nhzi77Xzc3amO81HHGQATe4_Mf3bSl" -O $(xdg-user-dir PICTURES)/Wallpapers/main.jpg && rm -rf /tmp/cookies.txt
+          wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=110nhzi77Xzc3amO81HHGQATe4_Mf3bSl' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=110nhzi77Xzc3amO81HHGQATe4_Mf3bSl" -O $(xdg-user-dir PICTURES)/Wallpapers/fernando-jorge-86GQxbFPjVE-unsplash && rm -rf /tmp/cookies.txt
 
           #axel -n 5 -a https://qxdc.herokuapp.com/Wallpapers/main.jpg -o $(xdg-user-dir PICTURES)/Wallpapers/main.jpg
 
