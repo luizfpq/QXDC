@@ -11,11 +11,11 @@
 PKG_MANAGER=$(load packageManager)
 
 
-APPLICATIONS="autoconf gvfs gvfs-bin gvfs-common gvfs-daemons gvfs-libs\
+APPLICATIONS="autoconf gvfs gvfs-common gvfs-daemons gvfs-libs\
  libmtp-dev gvfs-backends apt-transport-https htop gnome-disk-utility apparmor asciinema \
  axel curl fonts-lyx galculator gimp inkscape\
- keepassxc lightning locate lsb-release menulibre neofetch net-tools software-properties-common\
-  thunderbird thunderbird-l10n-pt-br transmission-gtk unrar unzip "
+ keepassxc locate lsb-release menulibre neofetch net-tools software-properties-common\
+   transmission-gtk unrar unzip "
 
 verifyXFCE() {
   sudo dpkg -s task-xfce-desktop &> /dev/null
@@ -29,6 +29,7 @@ else
 
     case "$REPLY" in
       s|S )
+        clear
         echo "Aguarde a instalação, esta etapa pode demorar alguns minutos... faça um café e aguarde o reboot automático da máquina"
         $PKG_MANAGER task-xfce-desktop &>> /tmp/QXDCinstall.log && echo -e "\xE2\x9C\x94" && sudo reboot|| echo -e "\xE2\x9D\x8C"
       ;;
