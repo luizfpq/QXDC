@@ -15,9 +15,9 @@ load systemPurge
 # adicione o nome do novo pacote à lista para instalar
 load installBaseApplications
 #instalando editor
-#load installVSCode
+load installVSCode
 #instalando o Google Chrome
-#load installGoogleChrome
+load installGoogleChrome
 # Instalando tema GTK e ícones
 load installThemes
 cd $ROOTDIR

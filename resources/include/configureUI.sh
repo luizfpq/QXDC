@@ -5,6 +5,7 @@
 # created:  ____-__-__
 # modified: 2021-09-11
 # 
+source ../utils/gdriveDownload.sh
 configureUI() {
   clear
   read -p "Tecle S para aplicar as configurações de ambiente para o usuario atual ou qualquer outra tecla para não aplicar para nenhum... " -n 1 -r
@@ -18,8 +19,8 @@ configureUI() {
           mkdir $(xdg-user-dir PICTURES)/Screenshots
 
         # @todo create menu to select wallpaper
-
-          axel -n 5 -a https://qxdc.herokuapp.com/Wallpapers/main.jpg -o $(xdg-user-dir PICTURES)/Wallpapers/main.jpg
+          #axel -n 5 -a https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/500944-simple-background.jpg -o $(xdg-user-dir PICTURES)/Wallpapers/main.jpg
+          gdriveDownload 1IxNTdmwo-OMkv6YsQAsJ8an26ufjLb-6 $(xdg-user-dir PICTURES)/Wallpapers/main.jpg
 
           xfconf-query -c xsettings -p /Net/ThemeName -s "Arc-Dark"
           xfconf-query -c xsettings -p /Net/IconThemeName -s "Arc"
