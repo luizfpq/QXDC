@@ -29,6 +29,7 @@ else
 
     case "$REPLY" in
       s|S )
+        echo "Aguarde a instalação, esta etapa pode demorar alguns minutos... faça um café e aguarde o reboot automático da máquina"
         $PKG_MANAGER task-xfce-desktop &>> /tmp/QXDCinstall.log && echo -e "\xE2\x9C\x94" && sudo reboot|| echo -e "\xE2\x9D\x8C"
       ;;
     esac
