@@ -1,3 +1,5 @@
+## THE CURRENT MODEL IS OUT OF DATE, IN THE PROCESS OF MIGRATION TO ANSIBLE ON BRANCHS with nomenclature starting with "av." 
+
 # QXDC → Quirino's XFCE Default Config
 
 ### Why?
