@@ -19,9 +19,13 @@ Instala pacotes, configura tema, ajusta paineis, aplica dotfiles e remove o lixo
 
 ## Screenshots
 
-| Desktop | Aplicacoes | Chrome | LightDM |
-|---------|-----------|--------|---------|
-| ![desktop](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-desktop.png) | ![apps](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-apps.png) | ![chrome](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-chrome.png) | ![lightdm](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-lightdm.png) |
+| Desktop | Aplicacoes |
+|---------|-----------|
+| ![desktop](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-desktop.png) | ![apps](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-apps.png) |
+
+| Chrome | LightDM |
+|--------|---------|
+| ![chrome](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-chrome.png) | ![lightdm](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-lightdm.png) |
 
 ## Comeco rapido
 
