@@ -50,7 +50,7 @@ desktop:
   cursor_theme: Adwaita
   workspaces: 1
   thunar_location_bar: ThunarLocationButtons
-  wallpaper_url: https://github.com/luizfpq/QXDC/releases/download/assets/wallpaper-default.jpg
+  wallpaper_url: https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/main-wallpaper.jpg
 
 apps:
   browser: firefox-esr

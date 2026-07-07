@@ -45,6 +45,7 @@ desktop:
   icons_show_trash: false
   icons_show_filesystem: false
   icons_show_removable: true
+  wallpaper_url: https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/main-wallpaper.jpg
   cursor_theme: Adwaita
 
 apps:
