@@ -3,6 +3,7 @@ ColorForeground=#2e3440
 ColorBackground=#e7e8eb
 ColorCursor=#2e3440
 ColorCursorUseDefault=FALSE
+ColorBoldIsBright=FALSE
 ColorPalette=#373d48;#9b3e46;#095b32;#808020;#1d3e6f;#823065;#3a7458;#828282;#5c6370;#d0555f;#119955;#dfe048;#4674b8;#ed86c9;#70d2a4;#dfdfdf
 TabActivityColor=#9b3e46
 MiscAlwaysShowTabs=FALSE
