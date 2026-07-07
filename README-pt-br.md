@@ -116,15 +116,17 @@ Nao sabe qual perfil usar? Versao curta:
 
 ## Visual
 
-| Item | Valor |
-|------|-------|
-| GTK/WM Theme | Arc-Lighter |
-| Icons | Papirus-Dark + papirus-folders (paleorange) |
-| Terminal | Nighty-Lighter (fundo #e7e8eb, texto #2e3440) |
-| Font | Noto Sans 10 |
-| Wallpaper | [QXDC-docs/main-wallpaper.jpg](https://github.com/luizfpq/QXDC-docs) |
-| LightDM | Mesmo wallpaper + Arc-Lighter |
-| Painel 2 | Dock com ~12% opacidade |
+| Item | Valor | Fonte |
+|------|-------|-------|
+| GTK/WM Theme | Arc-Lighter | [jnsh/arc-theme](https://github.com/jnsh/arc-theme) |
+| Icons | Papirus-Dark | [PapirusDevelopmentTeam/papirus-icon-theme](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme) |
+| Cor das Pastas | paleorange | [PapirusDevelopmentTeam/papirus-folders](https://github.com/PapirusDevelopmentTeam/papirus-folders) |
+| Cores do Terminal | Nighty-Lighter | Baseado no [Gogh-Co/Gogh — Nighty](https://github.com/Gogh-Co/Gogh/blob/master/themes/Nighty.yml) |
+| System Fetch | fastfetch | [fastfetch-cli/fastfetch](https://github.com/fastfetch-cli/fastfetch) |
+| Font | Noto Sans 10 | [Google Noto Fonts](https://fonts.google.com/noto) |
+| Painel 2 | Dock com ~12% opacidade | — |
+| Wallpaper | [QXDC-docs/main-wallpaper.jpg](https://github.com/luizfpq/QXDC-docs) | — |
+| LightDM | Mesmo wallpaper + Arc-Lighter | — |
 
 ## Estrutura
 
