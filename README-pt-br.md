@@ -38,13 +38,29 @@ Instala pacotes, configura tema, ajusta paineis, aplica dotfiles e remove o lixo
 
 ### Passo 1 — Baixar
 
-Abra um terminal e clone este repositorio:
+Abra um terminal. Voce tem duas opcoes:
+
+**Opcao A — Com git (recomendado):**
 
 ```bash
+sudo apt install git    # pule se o git ja estiver instalado
 git clone https://github.com/luizfpq/QXDC.git
 cd QXDC
 chmod +x qxdc.sh
 ```
+
+**Opcao B — Sem git (baixar ZIP):**
+
+Se voce nao tem git e nao quer instalar agora, baixe o ZIP direto:
+
+```bash
+wget https://github.com/luizfpq/QXDC/archive/refs/heads/v2.0.zip -O qxdc.zip
+unzip qxdc.zip
+cd QXDC-v2.0
+chmod +x qxdc.sh
+```
+
+> Se o `wget` tambem nao estiver disponivel: abra o Firefox, va em https://github.com/luizfpq/QXDC, clique no botao verde "Code" e depois em "Download ZIP". Extraia e abra um terminal dentro da pasta.
 
 ### Passo 2 — Visualizar antes (opcional, mas recomendado)
 

@@ -40,13 +40,29 @@ It installs packages, configures themes, adjusts panels, deploys dotfiles, and r
 
 ### Step 1 — Download
 
-Open a terminal and clone this repository:
+Open a terminal. You have two options:
+
+**Option A — With git (recommended):**
 
 ```bash
+sudo apt install git    # skip if git is already installed
 git clone https://github.com/luizfpq/QXDC.git
 cd QXDC
 chmod +x qxdc.sh
 ```
+
+**Option B — Without git (download ZIP):**
+
+If you don't have git and don't want to install it yet, download the ZIP directly:
+
+```bash
+wget https://github.com/luizfpq/QXDC/archive/refs/heads/v2.0.zip -O qxdc.zip
+unzip qxdc.zip
+cd QXDC-v2.0
+chmod +x qxdc.sh
+```
+
+> If `wget` is also missing: open Firefox, go to https://github.com/luizfpq/QXDC, click the green "Code" button, then "Download ZIP". Extract it and open a terminal inside the folder.
 
 ### Step 2 — Preview (optional but recommended)
 
