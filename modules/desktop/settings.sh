@@ -69,9 +69,14 @@ configure_panel2() {
     alpha="$(config_get "desktop.panel2_background_alpha" "$QXDC_CONFIG")"
     alpha="${alpha:-12}"
 
-    log_info "Painel 2 background alpha: ${alpha}%"
-    run xfconf-query -c xfce4-panel -p /panels/panel-2/background-style -s 0 --create -t uint
-    run xfconf-query -c xfce4-panel -p /panels/panel-2/background-alpha -s "$alpha" --create -t uint
+    # XFCE 4.20: background-style=1 (cor sólida) + background-rgba com alpha
+    local alpha_dec
+    alpha_dec="$(echo "scale=2; $alpha / 100" | bc)"
+
+    log_info "Painel 2 background: cor sólida, alpha ${alpha}% (${alpha_dec})"
+    run xfconf-query -c xfce4-panel -p /panels/panel-2/background-style -s 1 --create -t uint
+    run xfconf-query -c xfce4-panel -p /panels/panel-2/background-rgba \
+        -s 1.0 -s 1.0 -s 1.0 -s "$alpha_dec" --create -t double -t double -t double -t double
 }
 
 # --- Ícones da área de trabalho ---
