@@ -11,7 +11,7 @@ packages:
     - btop
     - net-tools
     - unzip
-    - unrar
+    - unrar-free
     - neofetch
     - lsb-release
     - gnome-disk-utility

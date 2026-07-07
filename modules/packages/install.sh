@@ -49,7 +49,7 @@ main() {
     pkg_update
 
     # Instala
-    pkg_install "${packages[@]}"
+    pkg_install "${packages[@]}" || true
 
     log_ok "Instalação de pacotes concluída."
     log_info "Log completo em: $QXDC_LOG"

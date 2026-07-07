@@ -115,7 +115,7 @@ pkg_install() {
             log_ok "$pkg"
         else
             log_warn "Falha ao instalar $pkg"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     done
 
@@ -141,7 +141,7 @@ pkg_remove() {
             log_ok "$pkg removido"
         else
             log_warn "Falha ao remover $pkg"
-            ((failed++))
+            failed=$((failed + 1))
         fi
     done
 
