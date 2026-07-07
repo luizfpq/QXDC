@@ -1,0 +1,57 @@
+# Perfil: full
+# Instalação completa — desktop produtivo com ferramentas dev e multimídia.
+
+packages:
+  install:
+    - apt-transport-https
+    - curl
+    - wget
+    - git
+    - htop
+    - btop
+    - net-tools
+    - unzip
+    - unrar
+    - neofetch
+    - lsb-release
+    - gnome-disk-utility
+    - keepassxc
+    - galculator
+    - menulibre
+    - locate
+    - software-properties-common
+    - fonts-noto
+    - fonts-noto-color-emoji
+    - fonts-lyx
+    - bash-completion
+    - xclip
+    - gimp
+    - inkscape
+    - transmission-gtk
+    - thunderbird
+    - thunderbird-l10n-pt-br
+    - asciinema
+    - axel
+    - apparmor
+  purge:
+    - mutt
+    - hv3
+    - imagemagick
+    - xterm
+    - parole
+
+desktop:
+  gtk_theme: Arc-Dark
+  wm_theme: Arc-Dark
+  icons: Papirus-Dark
+  papirus_folders_color: paleorange
+  font: Noto Sans 10
+  monospace_font: JetBrains Mono 10
+  cursor_theme: Adwaita
+  wallpaper_url: https://github.com/luizfpq/QXDC/releases/download/assets/wallpaper-default.jpg
+
+apps:
+  browser: firefox-esr
+  browser_theme: arc
+  editor: code
+  terminal: xfce4-terminal
