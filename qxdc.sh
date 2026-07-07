@@ -17,14 +17,20 @@ show_help() {
 ${C_BOLD}QXDC ${QXDC_VERSION}${C_RESET} — Quirino's XFCE Default Config
 
 ${C_BOLD}Uso:${C_RESET}
-  qxdc.sh <módulo> <ação> [opções]
+  qxdc.sh [opções]                  Instalação completa (all install)
+  qxdc.sh <módulo> <ação> [opções]  Executar módulo específico
+
+${C_BOLD}Instalação completa:${C_RESET}
+  qxdc.sh --yes                     Roda tudo com perfil full, sem perguntas
+  qxdc.sh --dry-run                 Mostra tudo que faria sem executar
+  qxdc.sh all install --profile full --yes
 
 ${C_BOLD}Módulos disponíveis:${C_RESET}
+  all        Instalação completa (todos os módulos em sequência)
   packages   Gerenciamento de pacotes (install, purge)
-  desktop    Configuração visual (theme, panel, wallpaper)
-  apps       Instalação de aplicativos (browser, editor)
+  desktop    Configuração visual (theme, settings, wallpaper)
+  apps       Instalação de aplicativos (browser, editor, fastfetch)
   dotfiles   Deploy de arquivos de configuração
-  system     Configuração de sistema (sources, firmware)
 
 ${C_BOLD}Opções globais:${C_RESET}
   --dry-run       Mostra o que faria sem executar
@@ -34,10 +40,11 @@ ${C_BOLD}Opções globais:${C_RESET}
   --help, -h      Mostra esta ajuda
 
 ${C_BOLD}Exemplos:${C_RESET}
-  qxdc.sh packages install --profile full --yes
-  qxdc.sh packages purge --dry-run
-  qxdc.sh desktop theme --profile full
-  qxdc.sh --help
+  qxdc.sh --yes                            # Instalação completa
+  qxdc.sh --dry-run                        # Preview completo
+  qxdc.sh packages install --profile minimal --yes
+  qxdc.sh desktop theme --profile full --yes
+  qxdc.sh all install --profile lab --yes
 
 ${C_BOLD}Log:${C_RESET}
   Toda execução gera log em /tmp/qxdc-*.log
@@ -74,6 +81,10 @@ main() {
         --version)
             echo "QXDC $QXDC_VERSION"
             exit 0
+            ;;
+        --yes|-y|--dry-run|--verbose|-v|--profile)
+            # Flags sem módulo → roda 'all install' com essas flags
+            exec bash "$SCRIPT_DIR/modules/all/install.sh" "$@"
             ;;
     esac
 
