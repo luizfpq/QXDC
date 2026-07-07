@@ -1,0 +1,27 @@
+# Perfil: lab
+# Para VMs de laboratório — mínimo sem extras visuais.
+# Foco em ferramentas de debug e desenvolvimento.
+
+packages:
+  install:
+    - curl
+    - wget
+    - git
+    - htop
+    - btop
+    - net-tools
+    - unzip
+    - lsb-release
+    - bash-completion
+    - strace
+    - tcpdump
+    - nmap
+    - jq
+    - tree
+    - tmux
+    - vim
+  purge:
+    - mutt
+    - hv3
+    - xterm
+    - parole

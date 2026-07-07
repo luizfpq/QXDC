@@ -1,0 +1,43 @@
+{
+    "logo": {
+        "type": "file",
+        "source": "~/.config/fastfetch/logo.txt",
+        "color": {
+            "1": "cyan"
+        },
+        "padding": {
+            "top": 1,
+            "left": 1,
+            "right": 2
+        }
+    },
+    "display": {
+        "separator": " → ",
+        "color": {
+            "keys": "blue",
+            "title": "cyan"
+        }
+    },
+    "modules": [
+        "title",
+        "separator",
+        "os",
+        "host",
+        "kernel",
+        "uptime",
+        "packages",
+        "shell",
+        "de",
+        "wm",
+        "wmtheme",
+        "theme",
+        "icons",
+        "terminal",
+        "terminalfont",
+        "cpu",
+        "gpu",
+        "memory",
+        "break",
+        "colors"
+    ]
+}

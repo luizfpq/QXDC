@@ -1,0 +1,54 @@
+# QXDC 2.0 — Configuração padrão
+# Este arquivo define os valores base. Perfis em profiles/ podem sobrescrever.
+
+packages:
+  install:
+    - apt-transport-https
+    - curl
+    - wget
+    - git
+    - htop
+    - btop
+    - net-tools
+    - unzip
+    - unrar-free
+    - lsb-release
+    - gnome-disk-utility
+    - keepassxc
+    - galculator
+    - menulibre
+    - locate
+    - fonts-noto
+    - fonts-noto-color-emoji
+    - bash-completion
+    - xclip
+  purge:
+    - mutt
+    - hv3
+    - imagemagick
+    - xterm
+
+desktop:
+  gtk_theme: Arc-Lighter
+  wm_theme: Arc-Lighter
+  icons: Papirus-Dark
+  papirus_folders_color: paleorange
+  font: Noto Sans 10
+  monospace_font: JetBrains Mono 10
+  workspaces: 1
+  thunar_location_bar: ThunarLocationButtons
+  app_menu: whiskermenu
+  desktop_right_click_menu: false
+  icons_show_home: false
+  icons_show_trash: false
+  icons_show_filesystem: false
+  icons_show_removable: true
+  panel2_background_alpha: 12
+  wallpaper_url: https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/main-wallpaper.jpg
+  cursor_theme: Adwaita
+
+apps:
+  browser: firefox-esr
+  browser_theme: arc
+  editor: code
+  terminal: xfce4-terminal

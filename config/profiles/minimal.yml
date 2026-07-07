@@ -1,0 +1,20 @@
+# Perfil: minimal
+# Instalação enxuta — apenas o essencial para um desktop funcional.
+
+packages:
+  install:
+    - apt-transport-https
+    - curl
+    - wget
+    - git
+    - htop
+    - net-tools
+    - unzip
+    - lsb-release
+    - bash-completion
+    - xclip
+    - locate
+  purge:
+    - mutt
+    - hv3
+    - xterm
