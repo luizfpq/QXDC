@@ -31,8 +31,8 @@ packages:
     - xterm
 
 desktop:
-  gtk_theme: Arc-Dark
-  wm_theme: Arc-Dark
+  gtk_theme: Arc-Lighter
+  wm_theme: Arc-Lighter
   icons: Papirus-Dark
   papirus_folders_color: paleorange
   font: Noto Sans 10
