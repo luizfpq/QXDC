@@ -48,6 +48,8 @@ desktop:
   font: Noto Sans 10
   monospace_font: JetBrains Mono 10
   cursor_theme: Adwaita
+  workspaces: 1
+  thunar_location_bar: ThunarLocationButtons
   wallpaper_url: https://github.com/luizfpq/QXDC/releases/download/assets/wallpaper-default.jpg
 
 apps:
