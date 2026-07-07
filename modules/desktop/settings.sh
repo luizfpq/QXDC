@@ -49,7 +49,18 @@ configure_app_menu() {
         fi
     fi
 
-    # Substituir plugin-1 (primeiro item do painel) pelo menu escolhido
+    # Verificar se o plugin-1 já é o tipo correto
+    local current
+    current="$(xfconf-query -c xfce4-panel -p /plugins/plugin-1 2>/dev/null)"
+    if [[ "$current" == "$menu" ]]; then
+        log_info "Plugin-1 já é $menu."
+        return 0
+    fi
+
+    # Remover plugin-1 antigo e recriar como whiskermenu
+    # O XFCE não permite mudar o tipo de um plugin existente — precisa recriar
+    log_info "Recriando plugin-1 como $menu..."
+    run xfconf-query -c xfce4-panel -p /plugins/plugin-1 -r 2>/dev/null || true
     run xfconf-query -c xfce4-panel -p /plugins/plugin-1 -s "$menu" --create -t string
 }
 

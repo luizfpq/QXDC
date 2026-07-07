@@ -94,12 +94,15 @@ apply_login_wallpaper() {
 
     log_info "Aplicando wallpaper na tela de login: $wallpaper"
 
-    # Ler configurações de tema do config
+    # Ler configurações de tema do config (com fallback para defaults)
     local gtk_theme icons font
     gtk_theme="$(config_get "desktop.gtk_theme" "$QXDC_CONFIG")"
+    [[ -z "$gtk_theme" ]] && gtk_theme="$(config_get "desktop.gtk_theme" "$QXDC_ROOT/config/defaults.yml")"
     icons="$(config_get "desktop.icons" "$QXDC_CONFIG")"
+    [[ -z "$icons" ]] && icons="$(config_get "desktop.icons" "$QXDC_ROOT/config/defaults.yml")"
     font="$(config_get "desktop.font" "$QXDC_CONFIG")"
-    gtk_theme="${gtk_theme:-Arc-Dark}"
+    [[ -z "$font" ]] && font="$(config_get "desktop.font" "$QXDC_ROOT/config/defaults.yml")"
+    gtk_theme="${gtk_theme:-Arc-Lighter}"
     icons="${icons:-Papirus-Dark}"
     font="${font:-Noto Sans 10}"
 
