@@ -31,21 +31,74 @@ It installs packages, configures themes, adjusts panels, deploys dotfiles, and r
 
 ## Quick start
 
+### Prerequisites
+
+- A Debian-based system (Debian 12+, Ubuntu 22.04+) with XFCE installed
+- `git` installed (if not: `sudo apt install git`)
+- A user with `sudo` privileges
+- Internet connection (packages will be downloaded)
+
+### Step 1 — Download
+
+Open a terminal and clone this repository:
+
 ```bash
-git clone https://github.com/luizfpq/QXDC.git && cd QXDC
+git clone https://github.com/luizfpq/QXDC.git
+cd QXDC
 chmod +x qxdc.sh
-
-# Dry-run first
-./qxdc.sh packages install --profile full --dry-run
-
-# Then for real
-./qxdc.sh packages install --profile full --yes
-./qxdc.sh desktop theme --profile full --yes
-./qxdc.sh desktop settings --yes
-./qxdc.sh desktop wallpaper --yes
-./qxdc.sh apps editor --yes
-./qxdc.sh apps browser --profile full --yes
 ```
+
+### Step 2 — Preview (optional but recommended)
+
+Before changing anything, you can preview what QXDC would do. This is safe — nothing gets installed or modified:
+
+```bash
+./qxdc.sh packages install --profile full --dry-run
+```
+
+You'll see a list of packages that would be installed. If it looks good, proceed.
+
+### Step 3 — Run it
+
+Execute the modules in order. Each one handles a different part of the setup:
+
+```bash
+# Install essential packages (editors, tools, fonts, utilities)
+./qxdc.sh packages install --profile full --yes
+
+# Remove unwanted packages that come with Debian by default
+./qxdc.sh packages purge --profile full --yes
+
+# Apply the visual theme (Arc-Lighter + Papirus icons)
+./qxdc.sh desktop theme --profile full --yes
+
+# Configure desktop behavior (workspaces, Thunar, panels)
+./qxdc.sh desktop settings --yes
+
+# Set the wallpaper (desktop + login screen)
+./qxdc.sh desktop wallpaper --yes
+
+# Install Visual Studio Code
+./qxdc.sh apps editor --yes
+
+# Install browser + theme integration
+./qxdc.sh apps browser --profile full --yes
+
+# Install fastfetch with custom ASCII logo
+./qxdc.sh apps fastfetch --yes
+```
+
+### Step 4 — Enjoy
+
+Log out and back in (or reboot) to see all changes applied. That's it.
+
+### Choosing a profile
+
+Not sure which profile to use? Here's the short version:
+
+- **`full`** — You want a complete, ready-to-work desktop. Pick this if in doubt.
+- **`minimal`** — You want just the essential packages, no visual changes.
+- **`lab`** — You're setting up a test VM and need debug tools, not a pretty desktop.
 
 ## Look and feel
 

@@ -29,21 +29,74 @@ Instala pacotes, configura tema, ajusta paineis, aplica dotfiles e remove o lixo
 
 ## Comeco rapido
 
+### Pre-requisitos
+
+- Um sistema baseado em Debian (Debian 12+, Ubuntu 22.04+) com XFCE instalado
+- `git` instalado (se nao tiver: `sudo apt install git`)
+- Um usuario com privilegios `sudo`
+- Conexao com a internet (pacotes serao baixados)
+
+### Passo 1 — Baixar
+
+Abra um terminal e clone este repositorio:
+
 ```bash
-git clone https://github.com/luizfpq/QXDC.git && cd QXDC
+git clone https://github.com/luizfpq/QXDC.git
+cd QXDC
 chmod +x qxdc.sh
-
-# Ver o que seria feito (dry-run)
-./qxdc.sh packages install --profile full --dry-run
-
-# Executar de verdade
-./qxdc.sh packages install --profile full --yes
-./qxdc.sh desktop theme --profile full --yes
-./qxdc.sh desktop settings --yes
-./qxdc.sh desktop wallpaper --yes
-./qxdc.sh apps editor --yes
-./qxdc.sh apps browser --profile full --yes
 ```
+
+### Passo 2 — Visualizar antes (opcional, mas recomendado)
+
+Antes de mudar qualquer coisa, voce pode ver o que o QXDC faria. Isso eh seguro — nada eh instalado ou modificado:
+
+```bash
+./qxdc.sh packages install --profile full --dry-run
+```
+
+Voce vai ver uma lista de pacotes que seriam instalados. Se parecer bom, siga em frente.
+
+### Passo 3 — Executar
+
+Execute os modulos em ordem. Cada um cuida de uma parte diferente da configuracao:
+
+```bash
+# Instalar pacotes essenciais (editores, ferramentas, fontes, utilitarios)
+./qxdc.sh packages install --profile full --yes
+
+# Remover pacotes indesejados que vem com o Debian por padrao
+./qxdc.sh packages purge --profile full --yes
+
+# Aplicar o tema visual (Arc-Lighter + icones Papirus)
+./qxdc.sh desktop theme --profile full --yes
+
+# Configurar comportamento do desktop (workspaces, Thunar, paineis)
+./qxdc.sh desktop settings --yes
+
+# Definir o wallpaper (desktop + tela de login)
+./qxdc.sh desktop wallpaper --yes
+
+# Instalar Visual Studio Code
+./qxdc.sh apps editor --yes
+
+# Instalar navegador + integracao de tema
+./qxdc.sh apps browser --profile full --yes
+
+# Instalar fastfetch com logo ASCII customizado
+./qxdc.sh apps fastfetch --yes
+```
+
+### Passo 4 — Aproveitar
+
+Faca logout e login novamente (ou reinicie) pra ver todas as mudancas aplicadas. Pronto.
+
+### Escolhendo um perfil
+
+Nao sabe qual perfil usar? Versao curta:
+
+- **`full`** — Voce quer um desktop completo e pronto pra trabalhar. Escolha esse na duvida.
+- **`minimal`** — Voce so quer os pacotes essenciais, sem mudancas visuais.
+- **`lab`** — Voce esta montando uma VM de teste e precisa de ferramentas de debug, nao de um desktop bonito.
 
 ## Visual
 
