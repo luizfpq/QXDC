@@ -91,18 +91,8 @@ configure_thunar() {
 
     log_info "Thunar location bar: $location_bar"
 
-    local thunarrc="$HOME/.config/Thunar/thunarrc"
-    mkdir -p "$(dirname "$thunarrc")"
-
-    if [[ -f "$thunarrc" ]]; then
-        if grep -q "^last-location-bar=" "$thunarrc"; then
-            run sed -i "s/^last-location-bar=.*/last-location-bar=$location_bar/" "$thunarrc"
-        else
-            run bash -c "echo 'last-location-bar=$location_bar' >> '$thunarrc'"
-        fi
-    else
-        run bash -c "echo '[Configuration]' > '$thunarrc' && echo 'last-location-bar=$location_bar' >> '$thunarrc'"
-    fi
+    # XFCE 4.18+: Thunar usa xfconf (canal thunar)
+    run xfconf-query -c thunar -p /last-location-bar -s "$location_bar" --create -t string
 }
 
 # --- Main ---

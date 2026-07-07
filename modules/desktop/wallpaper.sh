@@ -56,7 +56,22 @@ apply_desktop_wallpaper() {
 
     log_info "Aplicando wallpaper no desktop: $wallpaper"
 
-    # Setar para todos os monitores
+    # XFCE 4.18+: usa monitorNOME/workspace0/last-image
+    # Detectar monitores conectados
+    local monitors
+    monitors="$(xrandr 2>/dev/null | grep ' connected' | awk '{print $1}')"
+
+    if [[ -n "$monitors" ]]; then
+        while IFS= read -r mon; do
+            log_info "  Monitor: $mon"
+            run xfconf-query -c xfce4-desktop -p "/backdrop/screen0/monitor${mon}/workspace0/last-image" \
+                -s "$wallpaper" --create -t string
+            run xfconf-query -c xfce4-desktop -p "/backdrop/screen0/monitor${mon}/workspace0/image-style" \
+                -s 5 --create -t int
+        done <<< "$monitors"
+    fi
+
+    # Também setar no formato legado (monitor0/monitor1) por compatibilidade
     local props
     props="$(xfconf-query -c xfce4-desktop --list 2>/dev/null | grep -E 'last-image|image-path')"
 
@@ -64,11 +79,10 @@ apply_desktop_wallpaper() {
         while IFS= read -r prop; do
             run xfconf-query -c xfce4-desktop -p "$prop" -s "$wallpaper"
         done <<< "$props"
-    else
-        # Criar propriedades padrão se não existirem
-        run xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -s "$wallpaper" --create -t string
-        run xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/last-image -s "$wallpaper" --create -t string
     fi
+
+    # Reload xfdesktop
+    xfdesktop --reload 2>/dev/null || true
 
     log_ok "Wallpaper do desktop aplicado."
 }
