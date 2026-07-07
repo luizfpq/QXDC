@@ -34,7 +34,7 @@ download_wallpaper() {
 
     if [[ -f "$dest" ]]; then
         log_info "Wallpaper já existe: $dest"
-        echo "$dest"
+        QXDC_WALLPAPER_PATH="$dest"
         return 0
     fi
 
@@ -43,7 +43,7 @@ download_wallpaper() {
     run_sudo wget -q -O "$dest" "$url"
 
     if [[ -f "$dest" ]]; then
-        echo "$dest"
+        QXDC_WALLPAPER_PATH="$dest"
     else
         log_error "Falha ao baixar wallpaper."
         return 1
@@ -124,6 +124,11 @@ main() {
     local url
     url="$(config_get "desktop.wallpaper_url" "$QXDC_CONFIG")"
 
+    # Fallback para defaults se o perfil não define wallpaper
+    if [[ -z "$url" ]]; then
+        url="$(config_get "desktop.wallpaper_url" "$QXDC_ROOT/config/defaults.yml")"
+    fi
+
     if [[ -z "$url" ]]; then
         log_warn "Nenhuma URL de wallpaper definida em desktop.wallpaper_url"
         return 0
@@ -139,7 +144,9 @@ main() {
     fi
 
     local wallpaper_path
-    wallpaper_path="$(download_wallpaper "$url")"
+    QXDC_WALLPAPER_PATH=""
+    download_wallpaper "$url"
+    wallpaper_path="$QXDC_WALLPAPER_PATH"
 
     if [[ -z "$wallpaper_path" ]]; then
         log_error "Não foi possível obter o wallpaper."

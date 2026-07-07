@@ -12,6 +12,9 @@ QXDC_DRY_RUN="${QXDC_DRY_RUN:-false}"
 QXDC_YES="${QXDC_YES:-false}"
 QXDC_VERBOSE="${QXDC_VERBOSE:-false}"
 
+# Garantir DISPLAY para xfconf-query e xrandr (necessário via SSH)
+export DISPLAY="${DISPLAY:-:0}"
+
 # --- Cores ---
 if [[ -t 1 ]]; then
     C_RESET='\033[0m'
