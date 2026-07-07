@@ -33,6 +33,56 @@ configure_workspaces() {
     run xfconf-query -c xfwm4 -p /general/workspace_count -s "$count" --create -t int
 }
 
+# --- Menu de aplicativos (Whisker Menu) ---
+configure_app_menu() {
+    local menu
+    menu="$(config_get "desktop.app_menu" "$QXDC_CONFIG")"
+    menu="${menu:-whiskermenu}"
+
+    log_info "Menu de aplicativos: $menu"
+
+    # Verifica se whiskermenu está instalado
+    if [[ "$menu" == "whiskermenu" ]]; then
+        if ! is_installed xfce4-whiskermenu-plugin 2>/dev/null; then
+            log_info "Instalando xfce4-whiskermenu-plugin..."
+            run_sudo apt-get install -qq -y xfce4-whiskermenu-plugin
+        fi
+    fi
+
+    # Substituir plugin-1 (primeiro item do painel) pelo menu escolhido
+    run xfconf-query -c xfce4-panel -p /plugins/plugin-1 -s "$menu" --create -t string
+}
+
+# --- Menu de clique direito na área de trabalho ---
+configure_desktop_menu() {
+    local show_menu
+    show_menu="$(config_get "desktop.desktop_right_click_menu" "$QXDC_CONFIG")"
+    show_menu="${show_menu:-false}"
+
+    log_info "Menu clique direito desktop: $show_menu"
+    run xfconf-query -c xfce4-desktop -p /desktop-menu/show -s "$show_menu" --create -t bool
+}
+
+# --- Ícones da área de trabalho ---
+configure_desktop_icons() {
+    local show_home show_trash show_filesystem show_removable
+    show_home="$(config_get "desktop.icons_show_home" "$QXDC_CONFIG")"
+    show_trash="$(config_get "desktop.icons_show_trash" "$QXDC_CONFIG")"
+    show_filesystem="$(config_get "desktop.icons_show_filesystem" "$QXDC_CONFIG")"
+    show_removable="$(config_get "desktop.icons_show_removable" "$QXDC_CONFIG")"
+
+    show_home="${show_home:-false}"
+    show_trash="${show_trash:-false}"
+    show_filesystem="${show_filesystem:-false}"
+    show_removable="${show_removable:-true}"
+
+    log_info "Ícones desktop: home=$show_home trash=$show_trash filesystem=$show_filesystem removable=$show_removable"
+    run xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-home -s "$show_home" --create -t bool
+    run xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-trash -s "$show_trash" --create -t bool
+    run xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-filesystem -s "$show_filesystem" --create -t bool
+    run xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-removable -s "$show_removable" --create -t bool
+}
+
 # --- Thunar ---
 configure_thunar() {
     local location_bar
@@ -62,17 +112,28 @@ main() {
     load_profile "$PROFILE"
 
     if [[ "$QXDC_DRY_RUN" == "true" ]]; then
-        local ws tb
+        local ws tb menu desktop_menu
         ws="$(config_get "desktop.workspaces" "$QXDC_CONFIG")"
         tb="$(config_get "desktop.thunar_location_bar" "$QXDC_CONFIG")"
+        menu="$(config_get "desktop.app_menu" "$QXDC_CONFIG")"
+        desktop_menu="$(config_get "desktop.desktop_right_click_menu" "$QXDC_CONFIG")"
         log_info "[DRY-RUN] Configurações que seriam aplicadas:"
-        echo "  Workspaces:          ${ws:-1}"
-        echo "  Thunar location bar: ${tb:-ThunarLocationButtons}"
+        echo "  Workspaces:              ${ws:-1}"
+        echo "  Thunar location bar:     ${tb:-ThunarLocationButtons}"
+        echo "  App menu (painel):       ${menu:-whiskermenu}"
+        echo "  Right-click desktop menu: ${desktop_menu:-false}"
+        echo "  Desktop icons:           home=false trash=false filesystem=false removable=true"
         return 0
     fi
 
     configure_workspaces
+    configure_app_menu
+    configure_desktop_menu
+    configure_desktop_icons
     configure_thunar
+
+    # Restart panel para aplicar mudanças
+    xfce4-panel --restart 2>/dev/null &
 
     log_ok "Configurações de desktop aplicadas."
 }

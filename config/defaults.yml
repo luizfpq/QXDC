@@ -39,6 +39,12 @@ desktop:
   monospace_font: JetBrains Mono 10
   workspaces: 1
   thunar_location_bar: ThunarLocationButtons
+  app_menu: whiskermenu
+  desktop_right_click_menu: false
+  icons_show_home: false
+  icons_show_trash: false
+  icons_show_filesystem: false
+  icons_show_removable: true
   cursor_theme: Adwaita
 
 apps:
