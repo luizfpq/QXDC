@@ -63,6 +63,17 @@ configure_desktop_menu() {
     run xfconf-query -c xfce4-desktop -p /desktop-menu/show -s "$show_menu" --create -t bool
 }
 
+# --- Painel 2: transparência ---
+configure_panel2() {
+    local alpha
+    alpha="$(config_get "desktop.panel2_background_alpha" "$QXDC_CONFIG")"
+    alpha="${alpha:-12}"
+
+    log_info "Painel 2 background alpha: ${alpha}%"
+    run xfconf-query -c xfce4-panel -p /panels/panel-2/background-style -s 0 --create -t uint
+    run xfconf-query -c xfce4-panel -p /panels/panel-2/background-alpha -s "$alpha" --create -t uint
+}
+
 # --- Ícones da área de trabalho ---
 configure_desktop_icons() {
     local show_home show_trash show_filesystem show_removable
@@ -120,6 +131,7 @@ main() {
     configure_app_menu
     configure_desktop_menu
     configure_desktop_icons
+    configure_panel2
     configure_thunar
 
     # Restart panel para aplicar mudanças

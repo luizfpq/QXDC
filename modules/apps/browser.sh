@@ -79,14 +79,14 @@ apply_firefox_arc_theme() {
     # Encontrar perfil Firefox (pode não existir se nunca abriu)
     local firefox_dir="$HOME/.mozilla/firefox"
     if [[ ! -d "$firefox_dir" ]]; then
-        log_warn "Diretório Firefox não encontrado. Inicie o Firefox uma vez e re-execute."
-        log_info "Alternativa: instale manualmente o Arc-firefox-theme após primeiro uso."
-        return 0
+        log_info "Criando perfil Firefox..."
+        timeout 5 firefox-esr --headless 2>/dev/null || true
+        sleep 2
     fi
 
     # Encontrar perfil default
     local profile_dir
-    profile_dir="$(find "$firefox_dir" -maxdepth 1 -name "*.default-esr" -o -name "*.default-release" -o -name "*.default" | head -1)"
+    profile_dir="$(find "$firefox_dir" -maxdepth 1 -name "*.default-esr" -o -name "*.default-release" -o -name "*.default" 2>/dev/null | head -1)"
 
     if [[ -z "$profile_dir" ]]; then
         log_warn "Perfil Firefox não encontrado. Execute o Firefox uma vez primeiro."
@@ -96,32 +96,62 @@ apply_firefox_arc_theme() {
     local chrome_dir="$profile_dir/chrome"
     mkdir -p "$chrome_dir"
 
-    # Clonar tema Arc para Firefox
-    local arc_ff_dir="/tmp/arc-firefox-theme"
-    run rm -rf "$arc_ff_dir"
-    log_info "Clonando Arc-firefox-theme..."
-    run git clone --depth 1 https://github.com/nickcz/Arc-firefox-theme.git "$arc_ff_dir"
+    # Criar userChrome.css harmonizado com Arc-Lighter
+    cat > "$chrome_dir/userChrome.css" << 'CSS'
+/* Arc-Lighter Firefox Theme
+ * Harmoniza a UI do Firefox com o tema Arc-Lighter do sistema.
+ */
 
-    if [[ -f "$arc_ff_dir/userChrome.css" ]]; then
-        run cp "$arc_ff_dir/userChrome.css" "$chrome_dir/userChrome.css"
-        log_ok "userChrome.css instalado em $chrome_dir"
-    elif [[ -d "$arc_ff_dir/Arc-Dark" ]]; then
-        run cp "$arc_ff_dir/Arc-Dark/userChrome.css" "$chrome_dir/userChrome.css" 2>/dev/null || true
-        log_ok "userChrome.css (Arc-Dark) instalado."
-    else
-        log_warn "Estrutura do Arc-firefox-theme mudou. Verifique manualmente."
-    fi
+:root {
+  --arc-bg: #e7e8eb;
+  --arc-fg: #2e3440;
+  --arc-toolbar: #f5f6f7;
+  --arc-border: #cfd6e6;
+  --arc-accent: #5294e2;
+}
 
-    run rm -rf "$arc_ff_dir"
+/* Toolbar e tab bar */
+#navigator-toolbox {
+  background-color: var(--arc-toolbar) !important;
+  border-bottom: 1px solid var(--arc-border) !important;
+}
 
-    # Ativar userChrome.css no about:config
-    local prefs_file="$profile_dir/user.js"
-    if ! grep -q "toolkit.legacyUserProfileCustomizations.stylesheets" "$prefs_file" 2>/dev/null; then
-        echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$prefs_file"
-        log_info "Habilitado toolkit.legacyUserProfileCustomizations.stylesheets no user.js"
-    fi
+/* Tabs */
+.tabbrowser-tab .tab-background {
+  background-color: var(--arc-bg) !important;
+  border: none !important;
+}
 
-    log_ok "Tema Arc aplicado ao Firefox."
+.tabbrowser-tab[selected] .tab-background {
+  background-color: var(--arc-toolbar) !important;
+}
+
+/* URL bar */
+#urlbar-background {
+  background-color: #ffffff !important;
+  border: 1px solid var(--arc-border) !important;
+}
+
+/* Sidebar */
+#sidebar-header {
+  background-color: var(--arc-bg) !important;
+}
+CSS
+
+    # Ativar userChrome.css no user.js
+    local user_js="$profile_dir/user.js"
+    local needs_write=false
+
+    for pref in \
+        'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' \
+        'user_pref("browser.display.use_system_colors", true);'; do
+        if ! grep -qF "$pref" "$user_js" 2>/dev/null; then
+            echo "$pref" >> "$user_js"
+            needs_write=true
+        fi
+    done
+
+    log_ok "Tema Arc-Lighter aplicado ao Firefox."
     log_info "Reinicie o Firefox para ver as mudanças."
 }
 
