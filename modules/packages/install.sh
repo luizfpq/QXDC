@@ -44,6 +44,9 @@ main() {
         return 0
     fi
 
+    # Habilitar contrib + non-free (necessário para drivers, codecs, etc)
+    enable_nonfree_repos
+
     # Atualiza índice
     log_info "Atualizando índice de pacotes..."
     pkg_update

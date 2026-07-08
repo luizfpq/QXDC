@@ -151,5 +151,32 @@ pkg_remove() {
     fi
 }
 
+# Habilita repositórios contrib + non-free (Debian)
+# Debian 12+ separou non-free-firmware (firmware livre de redistribuir) de non-free (drivers
+# proprietários, codecs, etc). Muitos pacotes úteis vivem em contrib/non-free.
+enable_nonfree_repos() {
+    local sources="/etc/apt/sources.list"
+
+    if [[ "$DISTRO_FAMILY" != "debian" ]]; then
+        return 0
+    fi
+
+    # Já tem contrib + non-free?
+    if grep -qE "^deb .* main contrib non-free" "$sources" 2>/dev/null; then
+        [[ "$QXDC_VERBOSE" == "true" ]] && log_info "Repositórios contrib + non-free já habilitados."
+        return 0
+    fi
+
+    log_info "Habilitando repositórios contrib + non-free no sources.list..."
+
+    # Adicionar contrib e non-free preservando non-free-firmware se existir
+    run_sudo sed -i 's/main non-free-firmware/main contrib non-free non-free-firmware/' "$sources"
+    # Linhas com apenas "main" (sem non-free-firmware)
+    run_sudo sed -i '/contrib/!s/ main$/ main contrib non-free/' "$sources"
+
+    pkg_update
+    log_ok "Repositórios contrib + non-free habilitados."
+}
+
 # Inicializa detecção automaticamente ao ser sourced
 detect_distro

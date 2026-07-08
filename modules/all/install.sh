@@ -39,7 +39,9 @@ main() {
         "desktop wallpaper"
         "apps editor"
         "apps browser"
+        "apps media"
         "apps fastfetch"
+        "system hardware"
         "dotfiles deploy"
     )
 

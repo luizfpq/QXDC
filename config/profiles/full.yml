@@ -31,6 +31,7 @@ packages:
     - asciinema
     - axel
     - apparmor
+    - vlc
   purge:
     - mutt
     - hv3
@@ -55,3 +56,4 @@ apps:
   browser_theme: arc
   editor: code
   terminal: xfce4-terminal
+  media_player: vlc

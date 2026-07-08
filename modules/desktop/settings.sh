@@ -122,6 +122,53 @@ configure_thunar() {
     run xfconf-query -c thunar -p /last-location-bar -s "$location_bar" --create -t string
 }
 
+# --- Botão de janelas (tasklist) — desativar agrupamento ---
+configure_tasklist() {
+    log_info "Tasklist (window buttons): agrupamento desativado"
+
+    # Encontrar o plugin tasklist no painel 1
+    # O tasklist pode ter IDs variáveis; procurar pelo tipo "tasklist"
+    local plugin_id=""
+    local plugins
+    plugins="$(xfconf-query -c xfce4-panel -p /panels/panel-1/plugin-ids 2>/dev/null)"
+
+    if [[ -n "$plugins" ]]; then
+        for id in $plugins; do
+            local ptype
+            ptype="$(xfconf-query -c xfce4-panel -p /plugins/plugin-${id} 2>/dev/null)"
+            if [[ "$ptype" == "tasklist" ]]; then
+                plugin_id="$id"
+                break
+            fi
+        done
+    fi
+
+    if [[ -z "$plugin_id" ]]; then
+        # Fallback: tentar IDs comuns para tasklist em configurações padrão XFCE
+        for id in 2 3 4 5 6 7 8; do
+            local ptype
+            ptype="$(xfconf-query -c xfce4-panel -p /plugins/plugin-${id} 2>/dev/null)"
+            if [[ "$ptype" == "tasklist" ]]; then
+                plugin_id="$id"
+                break
+            fi
+        done
+    fi
+
+    if [[ -z "$plugin_id" ]]; then
+        log_warn "Plugin tasklist não encontrado no painel 1. Pulando configuração."
+        return 0
+    fi
+
+    log_info "Tasklist encontrado: plugin-${plugin_id}"
+
+    # grouping: 0 = nunca agrupar, 1 = sempre agrupar
+    run xfconf-query -c xfce4-panel -p /plugins/plugin-${plugin_id}/grouping \
+        -s 0 --create -t uint
+
+    log_ok "Agrupamento de janelas desativado (plugin-${plugin_id})."
+}
+
 # --- Main ---
 main() {
     log_step "Configurações de desktop — perfil: $PROFILE"
@@ -140,6 +187,7 @@ main() {
         echo "  App menu (painel):       ${menu:-whiskermenu}"
         echo "  Right-click desktop menu: ${desktop_menu:-false}"
         echo "  Desktop icons:           home=false trash=false filesystem=false removable=true"
+        echo "  Tasklist grouping:       desativado (never group)"
         return 0
     fi
 
@@ -156,6 +204,7 @@ main() {
     configure_desktop_icons
     configure_panel2
     configure_thunar
+    configure_tasklist
 
     # Restart panel para aplicar mudanças
     xfce4-panel --restart 2>/dev/null &
