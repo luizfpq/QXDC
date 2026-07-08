@@ -72,6 +72,45 @@ install_chrome() {
     log_ok "Google Chrome instalado."
 }
 
+# --- Definir browser padrão ---
+set_default_browser() {
+    local browser_bin="$1"
+
+    log_step "Definindo $browser_bin como browser padrão"
+
+    # update-alternatives (Debian)
+    if command_exists update-alternatives; then
+        local bin_path
+        bin_path="$(command -v "$browser_bin" 2>/dev/null)"
+        if [[ -n "$bin_path" ]]; then
+            run_sudo update-alternatives --set x-www-browser "$bin_path" 2>/dev/null || true
+            run_sudo update-alternatives --set gnome-www-browser "$bin_path" 2>/dev/null || true
+        fi
+    fi
+
+    # xdg-settings (funciona sem root, preferido)
+    if command_exists xdg-settings; then
+        local desktop_file=""
+        case "$browser_bin" in
+            google-chrome-stable|google-chrome)
+                desktop_file="google-chrome.desktop"
+                ;;
+            firefox-esr)
+                desktop_file="firefox-esr.desktop"
+                ;;
+            firefox)
+                desktop_file="firefox.desktop"
+                ;;
+        esac
+
+        if [[ -n "$desktop_file" ]]; then
+            run xdg-settings set default-web-browser "$desktop_file"
+        fi
+    fi
+
+    log_ok "$browser_bin definido como browser padrão."
+}
+
 # --- Tema Arc para Firefox (userChrome.css) ---
 apply_firefox_arc_theme() {
     log_step "Aplicando tema Arc ao Firefox"
@@ -195,10 +234,12 @@ main() {
         firefox-esr|firefox)
             install_firefox
             [[ "$browser_theme" == "arc" ]] && apply_firefox_arc_theme
+            set_default_browser "$browser"
             ;;
         google-chrome|chrome)
             install_chrome
             [[ "$browser_theme" == "arc" ]] && chrome_arc_theme_info
+            set_default_browser "google-chrome-stable"
             ;;
         *)
             log_info "Instalando $browser via gerenciador de pacotes..."

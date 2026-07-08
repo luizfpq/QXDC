@@ -51,7 +51,7 @@ desktop:
   wallpaper_url: https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/main-wallpaper.jpg
 
 apps:
-  browser: firefox-esr
+  browser: google-chrome
   browser_theme: arc
   editor: code
   terminal: xfce4-terminal
