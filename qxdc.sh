@@ -91,8 +91,13 @@ main() {
     local module="$1"
     shift
 
-    # Módulo sem ação → lista ações disponíveis
+    # Módulo sem ação → comportamento padrão
     if [[ $# -eq 0 || "$1" == --* ]]; then
+        # 'all' sem ação explícita → rodar 'install' com as flags restantes
+        if [[ "$module" == "all" ]]; then
+            exec bash "$SCRIPT_DIR/modules/all/install.sh" "$@"
+        fi
+
         local module_dir="$SCRIPT_DIR/modules/$module"
         if [[ -d "$module_dir" ]]; then
             log_info "Ações disponíveis para '$module':"
