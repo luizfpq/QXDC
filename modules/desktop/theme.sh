@@ -141,6 +141,13 @@ main() {
         return 0
     fi
 
+    # Verificar pré-condições de sessão desktop
+    if ! check_desktop_session; then
+        log_error "Módulo 'desktop theme' requer sessão XFCE ativa."
+        log_error "Rode sem sudo ou com 'sudo -E' para preservar DISPLAY/D-Bus."
+        return 1
+    fi
+
     install_arc_theme
     install_papirus_icons
     apply_xfce_theme

@@ -140,7 +140,7 @@ QXDC/
 ├── modules/             # Modulos independentes
 │   ├── packages/        # install.sh, purge.sh
 │   ├── desktop/         # theme.sh, settings.sh, wallpaper.sh
-│   ├── apps/            # browser.sh, editor.sh
+│   ├── apps/            # browser.sh, editor.sh, fastfetch.sh
 │   ├── dotfiles/        # files/ (configs prontas)
 │   └── system/          # (futuro: sources, firmware)
 ├── config/
@@ -166,6 +166,43 @@ QXDC/
 | `--yes` / `-y` | Pula confirmacoes (ideal pra scripts) |
 | `--verbose` / `-v` | Saida detalhada |
 | `--profile <p>` | Escolhe o perfil |
+
+## Diagnostico de erros
+
+Quando um modulo falha, o QXDC mostra:
+
+- O exit code do modulo
+- As ultimas 5 linhas de stderr inline
+- Um resumo final listando todos os modulos que falharam com seus erros
+
+Exemplo de saida com falha:
+
+```
+[WARN] [3/9] desktop theme falhou (exit code: 1).
+
+[ERRO] --- Erro em 'desktop theme' (ultimas 5 linhas) ---
+  [ERRO] DBUS_SESSION_BUS_ADDRESS nao definido.
+  [ERRO] Rode sem sudo ou com 'sudo -E' para preservar DISPLAY/D-Bus.
+[ERRO] --- fim ---
+
+:: Detalhes dos erros
+[ERRO] [FALHA] desktop theme
+  [ERRO] DBUS_SESSION_BUS_ADDRESS nao definido.
+  [ERRO] Rode sem sudo ou com 'sudo -E' para preservar DISPLAY/D-Bus.
+```
+
+### Problemas comuns
+
+| Sintoma | Causa | Solucao |
+|---------|-------|---------|
+| "DBUS_SESSION_BUS_ADDRESS nao definido" | `sudo` sem `-E` ou execucao fora da sessao XFCE | Rode sem sudo (o script pede quando precisa) ou use `sudo -E` |
+| "DISPLAY nao definido" | Execucao via SSH ou TTY sem X | Rode dentro de um terminal grafico na sessao XFCE |
+| "xfconfd nao esta rodando" | Sessao XFCE nao esta ativa | Faca login grafico no XFCE antes de executar |
+| Modulos desktop falham mas packages funciona | Packages so precisa de apt/sudo; desktop precisa de sessao grafica | Normal — rode os modulos desktop depois de logar no XFCE |
+
+### Log
+
+Toda execucao grava em `/tmp/qxdc-YYYYMMDD-HHMMSS.log`. Quando executado via `all install`, todos os modulos compartilham o mesmo arquivo de log.
 
 ## Suporte
 

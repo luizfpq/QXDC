@@ -146,6 +146,13 @@ main() {
         return 0
     fi
 
+    # Verificar pré-condições de sessão desktop
+    if ! check_desktop_session; then
+        log_error "Módulo 'desktop wallpaper' requer sessão XFCE ativa."
+        log_error "Rode sem sudo ou com 'sudo -E' para preservar DISPLAY/D-Bus."
+        return 1
+    fi
+
     local wallpaper_path
     QXDC_WALLPAPER_PATH=""
     download_wallpaper "$url"

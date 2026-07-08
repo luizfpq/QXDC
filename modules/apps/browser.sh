@@ -184,6 +184,12 @@ main() {
         return 0
     fi
 
+    # Browser theme precisa de sessão de usuário (perfil Firefox, HOME correto)
+    if [[ $EUID -eq 0 && -n "${SUDO_USER:-}" ]]; then
+        log_warn "Rodando como root via sudo. Perfil Firefox será em /root, não em ~$SUDO_USER."
+        log_warn "O tema do browser pode não ser aplicado corretamente."
+    fi
+
     # Instalar browser
     case "$browser" in
         firefox-esr|firefox)

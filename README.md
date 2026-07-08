@@ -142,7 +142,7 @@ QXDC/
 ├── modules/             # Independent modules
 │   ├── packages/        # install.sh, purge.sh
 │   ├── desktop/         # theme.sh, settings.sh, wallpaper.sh
-│   ├── apps/            # browser.sh, editor.sh
+│   ├── apps/            # browser.sh, editor.sh, fastfetch.sh
 │   ├── dotfiles/        # files/ (ready-made configs)
 │   └── system/          # (future: sources, firmware)
 ├── config/
@@ -168,6 +168,43 @@ QXDC/
 | `--yes` / `-y` | Skip confirmations |
 | `--verbose` / `-v` | Detailed output |
 | `--profile <p>` | Select configuration profile |
+
+## Error diagnostics
+
+When a module fails, QXDC shows:
+
+- The module's exit code
+- The last 5 lines of stderr inline
+- A final summary listing all failed modules with their errors
+
+Example output on failure:
+
+```
+[WARN] [3/9] desktop theme failed (exit code: 1).
+
+[ERRO] --- Error in 'desktop theme' (last 5 lines) ---
+  [ERRO] DBUS_SESSION_BUS_ADDRESS not defined.
+  [ERRO] Run without sudo or with 'sudo -E' to preserve DISPLAY/D-Bus.
+[ERRO] --- end ---
+
+:: Error details
+[ERRO] [FAIL] desktop theme
+  [ERRO] DBUS_SESSION_BUS_ADDRESS not defined.
+  [ERRO] Run without sudo or with 'sudo -E' to preserve DISPLAY/D-Bus.
+```
+
+### Common issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| "DBUS_SESSION_BUS_ADDRESS not defined" | `sudo` without `-E` or running outside XFCE session | Run without sudo (the script asks when needed) or use `sudo -E` |
+| "DISPLAY not defined" | Running via SSH or TTY without X | Run inside a graphical terminal in the XFCE session |
+| "xfconfd is not running" | XFCE session not active | Log in to the XFCE desktop before running |
+| Desktop modules fail but packages works | Packages only needs apt/sudo; desktop needs a graphical session | Expected — run desktop modules after logging into XFCE |
+
+### Log
+
+Every execution writes to `/tmp/qxdc-YYYYMMDD-HHMMSS.log`. When running via `all install`, all modules share the same log file.
 
 ## Supported systems
 

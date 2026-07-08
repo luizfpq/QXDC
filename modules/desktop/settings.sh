@@ -143,6 +143,13 @@ main() {
         return 0
     fi
 
+    # Verificar pré-condições de sessão desktop
+    if ! check_desktop_session; then
+        log_error "Módulo 'desktop settings' requer sessão XFCE ativa."
+        log_error "Rode sem sudo ou com 'sudo -E' para preservar DISPLAY/D-Bus."
+        return 1
+    fi
+
     configure_workspaces
     configure_app_menu
     configure_desktop_menu
