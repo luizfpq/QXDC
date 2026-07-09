@@ -117,39 +117,25 @@ install_bluetooth() {
 # Usa enable_nonfree_repos de lib/distro.sh (já sourced acima)
 
 # --- Instalar drivers NVIDIA ---
+# Delega para o módulo dedicado (modules/system/nvidia.sh) que usa o repositório
+# oficial da NVIDIA via cuda-keyring. Suporta open/proprietary e full/compute/desktop.
 install_nvidia() {
-    log_step "Instalando drivers NVIDIA"
+    log_step "Instalando drivers NVIDIA (via módulo dedicado)"
 
-    case "$DISTRO_FAMILY" in
-        debian)
-            enable_nonfree_repos
+    local nvidia_module="$SCRIPT_DIR/nvidia.sh"
 
-            local nvidia_packages=(
-                nvidia-driver
-                firmware-misc-nonfree
-                nvidia-settings
-            )
+    if [[ ! -f "$nvidia_module" ]]; then
+        log_error "Módulo nvidia.sh não encontrado em $SCRIPT_DIR"
+        return 1
+    fi
 
-            log_info "Pacotes: ${nvidia_packages[*]}"
-            pkg_install "${nvidia_packages[@]}"
+    # Repassar flags ativas
+    local flags=()
+    [[ "$QXDC_DRY_RUN" == "true" ]] && flags+=(--dry-run)
+    [[ "$QXDC_YES" == "true" ]]     && flags+=(--yes)
+    [[ "$QXDC_VERBOSE" == "true" ]] && flags+=(--verbose)
 
-            log_ok "Driver NVIDIA instalado."
-            log_warn "REBOOT NECESSARIO para ativar o driver proprietário."
-            log_info "Após reiniciar, verifique com: nvidia-smi"
-            ;;
-        arch)
-            local nvidia_packages=(nvidia nvidia-utils nvidia-settings)
-            log_info "Pacotes: ${nvidia_packages[*]}"
-            pkg_install "${nvidia_packages[@]}"
-            log_ok "Driver NVIDIA instalado."
-            log_warn "REBOOT NECESSARIO para ativar o driver proprietário."
-            ;;
-        *)
-            log_error "Instalação de driver NVIDIA não suportada em $DISTRO_FAMILY."
-            log_info "Instale manualmente seguindo a documentação da sua distro."
-            return 1
-            ;;
-    esac
+    bash "$nvidia_module" "${flags[@]}"
 }
 
 # --- Main ---

@@ -30,7 +30,7 @@ ${C_BOLD}Módulos disponíveis:${C_RESET}
   packages   Gerenciamento de pacotes (install, purge)
   desktop    Configuração visual (theme, settings, wallpaper)
   apps       Instalação de aplicativos (browser, editor, media, stremio, fastfetch)
-  system     Configuração de hardware (hardware)
+  system     Configuração de hardware (hardware, nvidia)
   dotfiles   Deploy de arquivos de configuração
 
 ${C_BOLD}Opções globais:${C_RESET}
