@@ -51,17 +51,25 @@ configure_app_menu() {
 
     # Verificar se o plugin-1 já é o tipo correto
     local current
-    current="$(xfconf-query -c xfce4-panel -p /plugins/plugin-1 2>/dev/null)"
+    current="$(xfconf-query -c xfce4-panel -p /plugins/plugin-1 2>/dev/null || true)"
     if [[ "$current" == "$menu" ]]; then
         log_info "Plugin-1 já é $menu."
         return 0
     fi
 
-    # Remover plugin-1 antigo e recriar como whiskermenu
-    # O XFCE não permite mudar o tipo de um plugin existente — precisa recriar
-    log_info "Recriando plugin-1 como $menu..."
-    run xfconf-query -c xfce4-panel -p /plugins/plugin-1 -r 2>/dev/null || true
-    run xfconf-query -c xfce4-panel -p /plugins/plugin-1 -s "$menu" --create -t string
+    # Mudar o tipo do plugin-1.
+    # NOTA: Não usar -r + recriar — isso pode desassociar o ID do painel.
+    # Em vez disso, apenas sobrescrever o valor do plugin (--create trata como upsert
+    # se já existir a propriedade com o mesmo tipo).
+    if [[ -z "$current" ]]; then
+        # Plugin-1 não existe — criar
+        log_info "Criando plugin-1 como $menu..."
+        run xfconf-query -c xfce4-panel -p /plugins/plugin-1 -s "$menu" --create -t string
+    else
+        # Plugin-1 existe mas é outro tipo — sobrescrever valor
+        log_info "Alterando plugin-1 de '$current' para '$menu'..."
+        run xfconf-query -c xfce4-panel -p /plugins/plugin-1 -s "$menu"
+    fi
 }
 
 # --- Menu de clique direito na área de trabalho ---
@@ -122,6 +130,122 @@ configure_thunar() {
     run xfconf-query -c thunar -p /last-location-bar -s "$location_bar" --create -t string
 }
 
+# --- Plugin de volume (pulseaudio) — garantir presença no painel 1 ---
+ensure_pulseaudio_plugin() {
+    log_info "Verificando plugin pulseaudio no painel 1..."
+
+    # 1) Ler IDs do painel 1
+    local panel1_ids
+    panel1_ids="$(xfconf-query -c xfce4-panel -p /panels/panel-1/plugin-ids 2>/dev/null \
+        | grep -E '^\s*[0-9]+\s*$' | tr -d '[:space:]' || true)"
+
+    if [[ -z "$panel1_ids" ]]; then
+        log_warn "Não foi possível ler plugin-ids do painel 1. Pulando."
+        return 0
+    fi
+
+    # 2) Verificar se pulseaudio já existe no painel 1
+    local id
+    while IFS= read -r id; do
+        [[ -z "$id" ]] && continue
+        local ptype
+        ptype="$(xfconf-query -c xfce4-panel -p "/plugins/plugin-${id}" 2>/dev/null || true)"
+        if [[ "$ptype" == "pulseaudio" ]]; then
+            log_info "Plugin pulseaudio já presente no painel 1 (plugin-${id}). Nada a fazer."
+            return 0
+        fi
+    done <<< "$panel1_ids"
+
+    # 3) Não existe — verificar se xfce4-pulseaudio-plugin está instalado
+    if ! is_installed xfce4-pulseaudio-plugin 2>/dev/null; then
+        log_info "Instalando xfce4-pulseaudio-plugin..."
+        run_sudo apt-get install -qq -y xfce4-pulseaudio-plugin
+    fi
+
+    # 4) Encontrar o maior ID de plugin em uso (todos os painéis)
+    local max_id=0
+    local all_plugins
+    all_plugins="$(xfconf-query -c xfce4-panel -p /plugins -l 2>/dev/null \
+        | grep -oP '/plugins/plugin-\K[0-9]+' | sort -n || true)"
+    if [[ -n "$all_plugins" ]]; then
+        max_id="$(echo "$all_plugins" | tail -1)"
+    fi
+    local new_id=$((max_id + 1))
+
+    log_info "Criando plugin pulseaudio como plugin-${new_id}..."
+    run xfconf-query -c xfce4-panel -p "/plugins/plugin-${new_id}" \
+        -s "pulseaudio" --create -t string
+
+    # 5) Determinar posição de inserção: após systray, antes do clock.
+    #    Estratégia: encontrar o ID do plugin 'systray' no painel 1.
+    #    Inserir o novo ID logo após o systray (ou após o separator seguinte).
+    #    Se não encontrar systray, inserir antes do último elemento (actions).
+    local ids_array=()
+    while IFS= read -r id; do
+        [[ -z "$id" ]] && continue
+        ids_array+=("$id")
+    done <<< "$panel1_ids"
+
+    local insert_pos=${#ids_array[@]}  # default: final
+    local systray_found=false
+    for i in "${!ids_array[@]}"; do
+        local ptype
+        ptype="$(xfconf-query -c xfce4-panel -p "/plugins/plugin-${ids_array[$i]}" 2>/dev/null || true)"
+        if [[ "$ptype" == "systray" || "$ptype" == "statusnotifier" ]]; then
+            systray_found=true
+            # Inserir após o systray. Se o próximo é separator, inserir depois dele.
+            local next=$((i + 1))
+            if [[ $next -lt ${#ids_array[@]} ]]; then
+                local next_type
+                next_type="$(xfconf-query -c xfce4-panel -p "/plugins/plugin-${ids_array[$next]}" 2>/dev/null || true)"
+                if [[ "$next_type" == "separator" ]]; then
+                    insert_pos=$((next + 1))
+                else
+                    insert_pos=$((i + 1))
+                fi
+            else
+                insert_pos=$((i + 1))
+            fi
+            break
+        fi
+    done
+
+    if [[ "$systray_found" == "false" ]]; then
+        # Fallback: inserir antes do último (geralmente 'actions')
+        if [[ ${#ids_array[@]} -gt 1 ]]; then
+            insert_pos=$(( ${#ids_array[@]} - 1 ))
+        fi
+        log_warn "Plugin systray não encontrado. Inserindo pulseaudio na posição ${insert_pos}."
+    fi
+
+    # 6) Construir nova lista com inserção
+    local new_ids=()
+    for i in "${!ids_array[@]}"; do
+        if [[ $i -eq $insert_pos ]]; then
+            new_ids+=("$new_id")
+        fi
+        new_ids+=("${ids_array[$i]}")
+    done
+    # Se insert_pos == tamanho do array, adicionar no final
+    if [[ $insert_pos -ge ${#ids_array[@]} ]]; then
+        new_ids+=("$new_id")
+    fi
+
+    # 7) Aplicar nova lista ao painel 1 (reset + create separados)
+    log_info "Atualizando plugin-ids do painel 1 (${#new_ids[@]} itens)..."
+
+    # Construir argumentos -t int -s <id> para xfconf-query
+    local xfconf_args=()
+    for pid in "${new_ids[@]}"; do
+        xfconf_args+=(-t int -s "$pid")
+    done
+
+    run xfconf-query -c xfce4-panel -p /panels/panel-1/plugin-ids -r
+    run xfconf-query -c xfce4-panel -p /panels/panel-1/plugin-ids -n "${xfconf_args[@]}"
+
+    log_ok "Plugin pulseaudio (plugin-${new_id}) adicionado ao painel 1."
+}
+
 # --- Botão de janelas (tasklist) — desativar agrupamento ---
 configure_tasklist() {
     log_info "Tasklist (window buttons): agrupamento desativado"
@@ -179,6 +303,7 @@ main() {
         echo "  Right-click desktop menu: ${desktop_menu:-false}"
         echo "  Desktop icons:           home=false trash=false filesystem=false removable=true"
         echo "  Tasklist grouping:       desativado (never group)"
+        echo "  Pulseaudio plugin:       garantir presença no painel 1"
         return 0
     fi
 
@@ -196,6 +321,7 @@ main() {
     configure_panel2
     configure_thunar
     configure_tasklist
+    ensure_pulseaudio_plugin
 
     # Restart panel para aplicar mudanças
     xfce4-panel --restart 2>/dev/null &
