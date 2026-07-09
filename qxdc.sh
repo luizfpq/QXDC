@@ -29,7 +29,7 @@ ${C_BOLD}Módulos disponíveis:${C_RESET}
   all        Instalação completa (todos os módulos em sequência)
   packages   Gerenciamento de pacotes (install, purge)
   desktop    Configuração visual (theme, settings, wallpaper)
-  apps       Instalação de aplicativos (browser, editor, media, fastfetch)
+  apps       Instalação de aplicativos (browser, editor, media, stremio, fastfetch)
   system     Configuração de hardware (hardware)
   dotfiles   Deploy de arquivos de configuração
 
