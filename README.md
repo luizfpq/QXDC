@@ -102,6 +102,9 @@ Execute the modules in order. Each one handles a different part of the setup:
 
 # Install fastfetch with custom ASCII logo
 ./qxdc.sh apps fastfetch --yes
+
+# Install NVIDIA drivers (official repo, open kernel modules)
+./qxdc.sh system nvidia --yes
 ```
 
 ### Step 4 — Enjoy
@@ -144,7 +147,7 @@ QXDC/
 │   ├── desktop/         # theme.sh, settings.sh, wallpaper.sh
 │   ├── apps/            # browser.sh, editor.sh, fastfetch.sh
 │   ├── dotfiles/        # files/ (ready-made configs)
-│   └── system/          # (future: sources, firmware)
+│   └── system/          # hardware.sh, nvidia.sh
 ├── config/
 │   ├── defaults.yml     # Default configuration
 │   └── profiles/        # minimal, full, lab
@@ -168,6 +171,34 @@ QXDC/
 | `--yes` / `-y` | Skip confirmations |
 | `--verbose` / `-v` | Detailed output |
 | `--profile <p>` | Select configuration profile |
+
+## NVIDIA drivers
+
+The `system nvidia` module installs NVIDIA drivers using the official NVIDIA repository (not Debian's non-free). It follows the [official installation guide](https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/latest/debian.html).
+
+```bash
+# Preview what would be installed
+./qxdc.sh system nvidia --dry-run
+
+# Install with open kernel modules (default, recommended for Turing+)
+./qxdc.sh system nvidia --yes
+
+# Install proprietary modules instead
+./qxdc.sh system nvidia --driver proprietary --yes
+
+# Compute-only (no GL/Vulkan/X — for headless/CUDA workloads)
+./qxdc.sh system nvidia --mode compute --yes
+
+# Desktop-only (no CUDA)
+./qxdc.sh system nvidia --mode desktop --yes
+```
+
+| Flag | Values | Default |
+|------|--------|---------|
+| `--driver` | `open`, `proprietary` | `open` |
+| `--mode` | `full`, `compute`, `desktop` | `full` |
+
+The module auto-detects the GPU and recommends `open` for Turing+ (GTX 16xx, RTX 20xx and newer). Requires a reboot after installation.
 
 ## Error diagnostics
 
