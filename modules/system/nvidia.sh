@@ -104,7 +104,7 @@ get_nvidia_distro_string() {
 has_nvidia_repo() {
     is_installed cuda-keyring 2>/dev/null && return 0
     # Fallback: verificar se o sources.list.d tem algo da NVIDIA
-    ls /etc/apt/sources.list.d/cuda-* 2>/dev/null | grep -q . && return 0
+    compgen -G "/etc/apt/sources.list.d/cuda-*" >/dev/null 2>&1 && return 0
     return 1
 }
 

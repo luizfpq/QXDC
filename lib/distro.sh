@@ -40,23 +40,26 @@ detect_distro() {
     export DISTRO_ID DISTRO_VERSION DISTRO_CODENAME DISTRO_FAMILY
 }
 
-# Retorna o comando de instalação de pacotes
+# Retorna o comando de instalação de pacotes como array (via nameref)
+# Uso: local -a cmd; pkg_install_cmd cmd
 pkg_install_cmd() {
+    # shellcheck disable=SC2178
+    local -n _arr="${1:-_pkg_cmd}"
     case "$DISTRO_FAMILY" in
         debian)
-            echo "apt-get install -qq -y"
+            _arr=(apt-get install -qq -y)
             ;;
         arch)
             if command_exists yay; then
-                echo "yay -S --noconfirm"
+                _arr=(yay -S --noconfirm)
             elif command_exists paru; then
-                echo "paru -S --noconfirm"
+                _arr=(paru -S --noconfirm)
             else
-                echo "pacman -S --noconfirm"
+                _arr=(pacman -S --noconfirm)
             fi
             ;;
         redhat)
-            echo "dnf install -y"
+            _arr=(dnf install -y)
             ;;
         *)
             log_error "Família de distro não suportada: $DISTRO_FAMILY"
@@ -65,17 +68,20 @@ pkg_install_cmd() {
     esac
 }
 
-# Retorna o comando de remoção de pacotes
+# Retorna o comando de remoção de pacotes como array (via nameref)
+# Uso: local -a cmd; pkg_remove_cmd cmd
 pkg_remove_cmd() {
+    # shellcheck disable=SC2178
+    local -n _arr="${1:-_pkg_cmd}"
     case "$DISTRO_FAMILY" in
         debian)
-            echo "apt-get purge -qq -y"
+            _arr=(apt-get purge -qq -y)
             ;;
         arch)
-            echo "pacman -Rns --noconfirm"
+            _arr=(pacman -Rns --noconfirm)
             ;;
         redhat)
-            echo "dnf remove -y"
+            _arr=(dnf remove -y)
             ;;
         *)
             log_error "Família de distro não suportada: $DISTRO_FAMILY"
@@ -101,8 +107,8 @@ pkg_update() {
 
 # Instala lista de pacotes
 pkg_install() {
-    local cmd
-    cmd="$(pkg_install_cmd)"
+    local -a cmd=()
+    pkg_install_cmd cmd || return 1
     local failed=0
 
     for pkg in "$@"; do
@@ -111,7 +117,7 @@ pkg_install() {
             continue
         fi
         log_info "Instalando $pkg..."
-        if run_sudo $cmd "$pkg"; then
+        if run_sudo "${cmd[@]}" "$pkg"; then
             log_ok "$pkg"
         else
             log_warn "Falha ao instalar $pkg"
@@ -127,8 +133,8 @@ pkg_install() {
 
 # Remove lista de pacotes
 pkg_remove() {
-    local cmd
-    cmd="$(pkg_remove_cmd)"
+    local -a cmd=()
+    pkg_remove_cmd cmd || return 1
     local failed=0
 
     for pkg in "$@"; do
@@ -137,7 +143,7 @@ pkg_remove() {
             continue
         fi
         log_info "Removendo $pkg..."
-        if run_sudo $cmd "$pkg"; then
+        if run_sudo "${cmd[@]}" "$pkg"; then
             log_ok "$pkg removido"
         else
             log_warn "Falha ao remover $pkg"

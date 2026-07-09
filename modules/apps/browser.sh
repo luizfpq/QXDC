@@ -49,11 +49,10 @@ install_chrome() {
     case "$DISTRO_FAMILY" in
         debian)
             log_info "Baixando Google Chrome..."
-            run wget -q -O /tmp/google-chrome.deb \
-                "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+            local tmp_deb="${QXDC_TMPDIR}/google-chrome.deb"
+            download_file "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" "$tmp_deb" || return 1
             log_info "Instalando .deb..."
-            run_sudo apt-get install -qq -y /tmp/google-chrome.deb
-            run rm -f /tmp/google-chrome.deb
+            run_sudo apt-get install -qq -y "$tmp_deb"
             ;;
         arch)
             if command_exists yay; then

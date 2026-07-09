@@ -91,9 +91,8 @@ install_repo_dependencies() {
     fi
 
     log_info "Pacotes a instalar: ${to_install[*]}"
-    run_sudo apt-get install -qq -y "${to_install[@]}"
 
-    if [[ $? -ne 0 ]]; then
+    if ! run_sudo apt-get install -qq -y "${to_install[@]}"; then
         log_error "Falha ao instalar dependências dos repos."
         return 1
     fi
@@ -110,15 +109,13 @@ install_libssl() {
         return 0
     fi
 
-    local tmp_deb="/tmp/libssl1.1.deb"
+    local tmp_deb="${QXDC_TMPDIR}/libssl1.1.deb"
 
-    log_info "Baixando libssl1.1..."
-    run wget -q -O "$tmp_deb" "$LIBSSL_URL"
+    download_file "$LIBSSL_URL" "$tmp_deb" || return 1
 
     log_info "Instalando libssl1.1..."
     run_sudo apt-get install -qq -y "$tmp_deb"
 
-    run rm -f "$tmp_deb"
     log_ok "libssl1.1 instalado."
 }
 
@@ -208,16 +205,13 @@ install_stremio() {
         return 0
     fi
 
-    local tmp_deb="/tmp/stremio.deb"
+    local tmp_deb="${QXDC_TMPDIR}/stremio.deb"
 
-    log_info "Baixando Stremio .deb..."
-    run wget -q -O "$tmp_deb" "$STREMIO_DEB_URL"
+    download_file "$STREMIO_DEB_URL" "$tmp_deb" || return 1
 
     # Com o pacote virtual libmpv1 instalado, apt resolve tudo limpo
     log_info "Instalando Stremio..."
     run_sudo apt-get install -qq -y "$tmp_deb"
-
-    run rm -f "$tmp_deb"
 
     # Verificar se o binário está acessível
     if command_exists stremio; then

@@ -61,9 +61,9 @@ main() {
         "dotfiles deploy"
     )
 
-    local flags="--profile $PROFILE --yes"
-    [[ "$QXDC_DRY_RUN" == "true" ]] && flags="$flags --dry-run"
-    [[ "$QXDC_VERBOSE" == "true" ]] && flags="$flags --verbose"
+    local -a flags=(--profile "$PROFILE" --yes)
+    [[ "$QXDC_DRY_RUN" == "true" ]] && flags+=(--dry-run)
+    [[ "$QXDC_VERBOSE" == "true" ]] && flags+=(--verbose)
 
     local total=${#modules[@]}
     local current=0
@@ -97,9 +97,9 @@ main() {
         # Log individual do módulo: captura stdout + stderr combinados
         local mod_log="$module_log_dir/${current}-${module_name}-${action}.log"
 
-        # Executa módulo com pipefail desabilitado para capturar exit code real
+        # Executa módulo
         local exit_code=0
-        QXDC_LOG="$QXDC_LOG" bash "$module_path" $flags > "$mod_log" 2>&1 || exit_code=$?
+        QXDC_LOG="$QXDC_LOG" bash "$module_path" "${flags[@]}" > "$mod_log" 2>&1 || exit_code=$?
 
         # Mostrar output do módulo no terminal
         cat "$mod_log"

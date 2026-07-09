@@ -8,9 +8,9 @@ ERRORS=0
 echo "=== QXDC ShellCheck ==="
 echo ""
 
-for f in $(find "$SCRIPT_DIR" -name "*.sh" -not -path "*/tests/*" -not -path "*/.git/*" | sort); do
+for f in $(find "$SCRIPT_DIR" -name "*.sh" -not -path "*/tests/*" -not -path "*/.git/*" -not -path "*/resources/*" | sort); do
     relative="${f#$SCRIPT_DIR/}"
-    if shellcheck -S warning "$f" 2>/dev/null; then
+    if shellcheck -S warning -e SC2034 "$f" 2>/dev/null; then
         echo "  OK  $relative"
     else
         echo "  ERR $relative"

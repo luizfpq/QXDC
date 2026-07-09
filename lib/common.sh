@@ -12,8 +12,20 @@ QXDC_DRY_RUN="${QXDC_DRY_RUN:-false}"
 QXDC_YES="${QXDC_YES:-false}"
 QXDC_VERBOSE="${QXDC_VERBOSE:-false}"
 
+# Diretório para arquivos temporários do QXDC (limpo no exit)
+QXDC_TMPDIR="$(mktemp -d /tmp/qxdc-run-XXXXXX)"
+
 # Garantir DISPLAY para xfconf-query e xrandr (necessário via SSH)
 export DISPLAY="${DISPLAY:-:0}"
+
+# --- Cleanup global ---
+# Registra trap para limpeza de temp files em qualquer saída (normal, erro, sinal).
+_qxdc_cleanup() {
+    local exit_code=$?
+    rm -rf "$QXDC_TMPDIR" 2>/dev/null || true
+    exit "$exit_code"
+}
+trap _qxdc_cleanup EXIT INT TERM HUP
 
 # --- Cores ---
 if [[ -t 1 ]]; then
@@ -70,7 +82,8 @@ check_not_root() {
 
 # --- Execução controlada ---
 # Executa comando respeitando dry-run e logging.
-# Stdout vai para o log. Stderr vai para o log E é capturado para exibir em caso de falha.
+# Stdout vai para o log. Stderr é capturado separadamente para exibir em caso de falha.
+# Usa mktemp (unico por invocação) dentro do QXDC_TMPDIR (limpo automaticamente no exit).
 # Retorna o exit code real do comando.
 run() {
     if [[ "$QXDC_DRY_RUN" == "true" ]]; then
@@ -83,21 +96,23 @@ run() {
         echo -e "  ${C_BLUE}[CMD]${C_RESET} $*"
     fi
 
-    echo "[CMD] $*" >> "$QXDC_LOG"
+    echo "[CMD] $(date +%H:%M:%S) $*" >> "$QXDC_LOG"
 
-    local err_tmp="/tmp/qxdc-cmd-$$.err"
+    local err_tmp
+    err_tmp="$(mktemp "${QXDC_TMPDIR}/cmd-XXXXXX.err")"
     local rc=0
 
     "$@" >> "$QXDC_LOG" 2>"$err_tmp" || rc=$?
 
-    # Sempre anexar stderr ao log
+    # Sempre anexar stderr ao log principal
     if [[ -s "$err_tmp" ]]; then
+        echo "[STDERR] $*" >> "$QXDC_LOG"
         cat "$err_tmp" >> "$QXDC_LOG"
     fi
 
     if [[ $rc -ne 0 ]]; then
         echo "[FAIL] exit code $rc: $*" >> "$QXDC_LOG"
-        log_error "Comando falhou ($rc): $*"
+        log_error "Comando falhou (exit $rc): $*"
         if [[ -s "$err_tmp" ]]; then
             tail -5 "$err_tmp" | while IFS= read -r line; do
                 log_error "  $line"
@@ -109,14 +124,68 @@ run() {
     return $rc
 }
 
-# Executa com sudo (sem captura de erro — delega para run)
+# Executa com sudo — delega para run.
 run_sudo() {
     run sudo "$@"
 }
 
+# --- Download seguro ---
+# Wrapper para wget com timeout, validação de tamanho e retry.
+# Uso: download_file <url> <destino> [--sudo]
+# Retorna 1 se o download falhar ou o arquivo estiver vazio.
+download_file() {
+    local url="$1"
+    local dest="$2"
+    local use_sudo=false
+
+    if [[ "${3:-}" == "--sudo" ]]; then
+        use_sudo=true
+    fi
+
+    if [[ "$QXDC_DRY_RUN" == "true" ]]; then
+        echo -e "  ${C_YELLOW}[DRY-RUN]${C_RESET} download: $url → $dest"
+        echo "[DRY-RUN] download: $url → $dest" >> "$QXDC_LOG"
+        return 0
+    fi
+
+    log_info "Baixando: $(basename "$dest")"
+    [[ "$QXDC_VERBOSE" == "true" ]] && log_info "  URL: $url"
+
+    local wget_args=(
+        --timeout=30
+        --tries=3
+        --waitretry=5
+        -q
+        -O "$dest"
+    )
+
+    local rc=0
+    if [[ "$use_sudo" == "true" ]]; then
+        sudo wget "${wget_args[@]}" "$url" 2>&1 | tee -a "$QXDC_LOG" >/dev/null || rc=$?
+    else
+        wget "${wget_args[@]}" "$url" >> "$QXDC_LOG" 2>&1 || rc=$?
+    fi
+
+    if [[ $rc -ne 0 ]]; then
+        log_error "Download falhou (exit $rc): $url"
+        rm -f "$dest" 2>/dev/null || true
+        return 1
+    fi
+
+    # Validar que o arquivo não está vazio
+    if [[ ! -s "$dest" ]]; then
+        log_error "Download resultou em arquivo vazio: $dest"
+        rm -f "$dest" 2>/dev/null || true
+        return 1
+    fi
+
+    [[ "$QXDC_VERBOSE" == "true" ]] && log_info "  Salvo: $dest ($(stat -c%s "$dest") bytes)"
+    return 0
+}
+
 # --- Verificação de saúde do apt ---
 # Retorna 0 se apt está funcional, 1 se tem dependências quebradas.
-# Se detect_and_fix=true (padrão), tenta corrigir automaticamente.
+# Se fix=true (padrão), tenta corrigir automaticamente.
 # Pode ser usado por qualquer módulo: check_apt_health || exit 1
 check_apt_health() {
     local fix="${1:-true}"
@@ -133,18 +202,11 @@ check_apt_health() {
         return 1
     fi
 
-    log_warn "Dependências quebradas detectadas. Corrigindo..."
-
-    # Identificar e remover pacotes com deps insatisfeitas
-    # Caso conhecido: stremio instalado com dpkg --force-depends (libmpv1 faltando)
-    if echo "$check_output" | grep -qi "libmpv1"; then
-        log_info "Dependência libmpv1 insatisfeita. Removendo pacotes afetados..."
-        sudo dpkg --purge --force-depends stremio >> "$QXDC_LOG" 2>&1 || true
-    fi
+    log_warn "Dependências quebradas detectadas. Tentando correção automática..."
 
     # Corrigir estado geral
-    sudo dpkg --configure -a >> "$QXDC_LOG" 2>&1 || true
-    sudo apt --fix-broken install -y >> "$QXDC_LOG" 2>&1 || true
+    sudo dpkg --configure -a 2>&1 | tee -a "$QXDC_LOG" >/dev/null || true
+    sudo apt --fix-broken install -y 2>&1 | tee -a "$QXDC_LOG" >/dev/null || true
 
     # Verificar de novo
     check_output="$(sudo apt-get check 2>&1)" || true

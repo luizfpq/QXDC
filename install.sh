@@ -20,5 +20,5 @@ load installVSCode
 load installGoogleChrome
 # Instalando tema GTK e ícones
 load installThemes
-cd $ROOTDIR
+cd "$ROOTDIR" || exit 1
 load configureUI

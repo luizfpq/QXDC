@@ -34,20 +34,18 @@ download_wallpaper() {
 
     if [[ -f "$dest" ]]; then
         log_info "Wallpaper já existe: $dest"
-        QXDC_WALLPAPER_PATH="$dest"
+        echo "$dest"
         return 0
     fi
 
     run_sudo mkdir -p "$WALLPAPER_DIR"
-    log_info "Baixando wallpaper: $url"
-    run_sudo wget -q -O "$dest" "$url"
 
-    if [[ -f "$dest" ]]; then
-        QXDC_WALLPAPER_PATH="$dest"
-    else
+    if ! download_file "$url" "$dest" --sudo; then
         log_error "Falha ao baixar wallpaper."
         return 1
     fi
+
+    echo "$dest"
 }
 
 # --- Aplicar no desktop XFCE ---
@@ -154,9 +152,10 @@ main() {
     fi
 
     local wallpaper_path
-    QXDC_WALLPAPER_PATH=""
-    download_wallpaper "$url"
-    wallpaper_path="$QXDC_WALLPAPER_PATH"
+    wallpaper_path="$(download_wallpaper "$url")" || {
+        log_error "Não foi possível obter o wallpaper."
+        return 1
+    }
 
     if [[ -z "$wallpaper_path" ]]; then
         log_error "Não foi possível obter o wallpaper."

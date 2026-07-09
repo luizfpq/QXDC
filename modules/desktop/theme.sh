@@ -70,7 +70,17 @@ install_papirus_icons() {
     else
         log_info "Instalando papirus-folders..."
         if [[ "$QXDC_DRY_RUN" != "true" ]]; then
-            wget -qO- https://git.io/papirus-folders-install | sudo sh >> "$QXDC_LOG" 2>&1
+            local installer="${QXDC_TMPDIR}/papirus-folders-install.sh"
+            download_file "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-folders/master/install.sh" \
+                "$installer" || {
+                log_warn "Falha ao baixar instalador papirus-folders. Pulando cor de pastas."
+                return 0
+            }
+            chmod +x "$installer"
+            run_sudo bash "$installer" >> "$QXDC_LOG" 2>&1 || {
+                log_warn "Falha ao instalar papirus-folders. Pulando cor de pastas."
+                return 0
+            }
         fi
     fi
 

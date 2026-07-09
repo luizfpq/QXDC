@@ -8,6 +8,12 @@
 config_get_list() {
     local key="$1"
     local file="$2"
+
+    if [[ ! -f "$file" ]]; then
+        log_error "Arquivo de configuração não encontrado: $file"
+        return 1
+    fi
+
     local in_section=false
     local depth=""
 
@@ -74,6 +80,11 @@ config_get_list() {
 config_get() {
     local key="$1"
     local file="$2"
+
+    if [[ ! -f "$file" ]]; then
+        log_error "Arquivo de configuração não encontrado: $file"
+        return 1
+    fi
 
     local top_key="${key%%.*}"
     local sub_key="${key#*.}"

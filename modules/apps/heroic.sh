@@ -115,15 +115,12 @@ install_heroic() {
         log_info "Atualizando Heroic: ${old_ver} → ${HEROIC_VERSION}"
     fi
 
-    local tmp_deb="/tmp/heroic-${HEROIC_VERSION}.deb"
+    local tmp_deb="${QXDC_TMPDIR}/heroic-${HEROIC_VERSION}.deb"
 
-    log_info "Baixando Heroic Games Launcher .deb..."
-    run wget -q -O "$tmp_deb" "$HEROIC_DEB_URL"
+    download_file "$HEROIC_DEB_URL" "$tmp_deb" || return 1
 
     log_info "Instalando Heroic Games Launcher..."
     run_sudo apt-get install -qq -y "$tmp_deb"
-
-    run rm -f "$tmp_deb"
 
     if command_exists heroic; then
         log_ok "Heroic Games Launcher v${HEROIC_VERSION} instalado com sucesso."
