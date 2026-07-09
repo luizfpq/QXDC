@@ -54,3 +54,4 @@ apps:
   terminal: xfce4-terminal
   media_player: vlc
   stremio: true
+  telegram: true
