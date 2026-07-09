@@ -1,6 +1,6 @@
 #!/bin/bash
 # modules/apps/stremio.sh — Instala Stremio (media center/streaming)
-# Método: .deb oficial + dependências manuais
+# Método: .deb oficial + dependências manuais + pacote virtual libmpv1
 #
 # O .deb do Stremio (v4.4.168) declara dependências que precisam de tratamento:
 #   - Pacotes QML (Qt5), nodejs, libfdk-aac2 → disponíveis nos repos Debian 13
@@ -8,11 +8,12 @@
 #   - libssl1.1 → NÃO existe nos repos (Debian 13 usa OpenSSL 3)
 #
 # Estratégia:
-#   1. Instalar todas as dependências que existem nos repos (QML, nodejs, etc.)
-#   2. Instalar libssl1.1 de fonte externa (Ubuntu mirrors)
-#   3. Instalar libmpv2 + criar symlink libmpv.so.1 → libmpv.so.2
-#   4. Instalar stremio.deb via dpkg --force-depends (só libmpv1 fica pendente)
-#   5. Marcar a dependência libmpv1 como satisfeita (equivs ou hold)
+#   1. Instalar equivs (para criar pacote virtual)
+#   2. Instalar todas as dependências que existem nos repos (QML, nodejs, etc.)
+#   3. Instalar libssl1.1 de fonte externa (Ubuntu mirrors)
+#   4. Instalar libmpv2 + criar symlink libmpv.so.1 → libmpv.so.2
+#   5. Criar e instalar pacote virtual libmpv1 (equivs) → satisfaz dpkg/apt
+#   6. Instalar stremio.deb normalmente via apt (dependências resolvidas)
 #
 # Uso: ./modules/apps/stremio.sh [--dry-run] [--yes] [--verbose] [--profile <nome>]
 
@@ -41,6 +42,7 @@ LIBSSL_URL="http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.
 
 # Dependências que existem nos repos Debian 13
 REPO_DEPS=(
+    equivs
     nodejs
     libmpv2
     libfdk-aac2t64
@@ -52,6 +54,24 @@ REPO_DEPS=(
     qml-module-qt-labs-folderlistmodel
     qml-module-qt-labs-settings
 )
+
+# --- Limpar instalação quebrada anterior ---
+cleanup_broken_stremio() {
+    # Se stremio está instalado mas libmpv1 não está satisfeita, o apt trava.
+    # O dpkg marca como 'ii' mesmo com --force-depends, mas o apt detecta o problema.
+    if is_installed stremio 2>/dev/null; then
+        if ! is_installed libmpv1 2>/dev/null; then
+            log_warn "Stremio instalado mas libmpv1 não satisfeita. Removendo para reinstalar limpo..."
+            run_sudo dpkg --purge --force-depends stremio
+            run_sudo dpkg --configure -a
+            run_sudo apt --fix-broken install -y
+            log_ok "Instalação anterior do Stremio removida. Apt limpo."
+        fi
+    else
+        # Stremio não instalado — garantir que o apt está saudável
+        check_apt_health || return 1
+    fi
+}
 
 # --- Instalar dependências dos repositórios ---
 install_repo_dependencies() {
@@ -132,6 +152,53 @@ fix_libmpv_symlink() {
     fi
 }
 
+# --- Criar pacote virtual libmpv1 via equivs ---
+# Isso satisfaz a dependência do Stremio no dpkg/apt sem poluir o sistema.
+create_libmpv1_virtual() {
+    log_step "Criando pacote virtual libmpv1 (equivs)"
+
+    if is_installed libmpv1 2>/dev/null; then
+        log_info "libmpv1 já satisfeito (pacote virtual ou real)."
+        return 0
+    fi
+
+    local workdir="/tmp/qxdc-equivs-libmpv1"
+    run rm -rf "$workdir"
+    run mkdir -p "$workdir"
+
+    cat > "$workdir/libmpv1-compat" <<'CTRL'
+Section: libs
+Priority: optional
+Standards-Version: 3.9.2
+Package: libmpv1
+Version: 0.99.0~compat
+Provides: libmpv1
+Depends: libmpv2
+Architecture: amd64
+Description: Compatibility shim for libmpv1 (QXDC)
+ Debian 13 ships libmpv2. This virtual package satisfies packages that
+ depend on libmpv1 while the ABI-compatible symlink is in place.
+CTRL
+
+    log_info "Construindo pacote virtual..."
+    run bash -c "cd '$workdir' && equivs-build libmpv1-compat"
+
+    local built_deb
+    built_deb="$(find "$workdir" -name 'libmpv1_*.deb' -type f | head -1)"
+
+    if [[ -z "$built_deb" ]]; then
+        log_error "equivs-build falhou. Verifique se equivs está instalado."
+        run rm -rf "$workdir"
+        return 1
+    fi
+
+    log_info "Instalando pacote virtual libmpv1..."
+    run_sudo apt-get install -qq -y "$built_deb"
+
+    run rm -rf "$workdir"
+    log_ok "Pacote virtual libmpv1 instalado — dependência satisfeita."
+}
+
 # --- Instalar Stremio via .deb ---
 install_stremio() {
     log_step "Instalando Stremio"
@@ -146,10 +213,9 @@ install_stremio() {
     log_info "Baixando Stremio .deb..."
     run wget -q -O "$tmp_deb" "$STREMIO_DEB_URL"
 
-    # dpkg --force-depends: a única dependência não resolvível é libmpv1,
-    # que é satisfeita pelo symlink libmpv.so.1 → libmpv.so.2
-    log_info "Instalando Stremio (dpkg --force-depends para libmpv1)..."
-    run_sudo dpkg --force-depends -i "$tmp_deb"
+    # Com o pacote virtual libmpv1 instalado, apt resolve tudo limpo
+    log_info "Instalando Stremio..."
+    run_sudo apt-get install -qq -y "$tmp_deb"
 
     run rm -f "$tmp_deb"
 
@@ -171,16 +237,18 @@ main() {
     load_profile "$PROFILE"
 
     if [[ "$QXDC_DRY_RUN" == "true" ]]; then
-        log_info "[DRY-RUN] Stremio — método: deb + dpkg --force-depends"
+        log_info "[DRY-RUN] Stremio — método: deb + pacote virtual libmpv1 (equivs)"
         log_info "[DRY-RUN] Deps repos: ${REPO_DEPS[*]}"
-        log_info "[DRY-RUN] Deps externas: libssl1.1 + symlink libmpv.so.1→2"
+        log_info "[DRY-RUN] Deps externas: libssl1.1 + symlink libmpv.so.1→2 + equivs libmpv1"
         log_info "[DRY-RUN] URL: $STREMIO_DEB_URL"
         return 0
     fi
 
+    cleanup_broken_stremio
     install_repo_dependencies || exit 1
     install_libssl || exit 1
     fix_libmpv_symlink || exit 1
+    create_libmpv1_virtual || exit 1
     install_stremio
 }
 

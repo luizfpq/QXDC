@@ -1,6 +1,7 @@
 #!/bin/bash
 # modules/all/install.sh — Instalação completa do QXDC em sequência
 # Executa todos os módulos na ordem correta.
+# Cada módulo gera um log individual em /tmp/qxdc-modules/ para análise.
 #
 # Uso: ./qxdc.sh all install [--dry-run] [--yes] [--verbose] [--profile <nome>]
 
@@ -23,13 +24,26 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+# --- Sanitizar estado do apt antes de tudo ---
+sanitize_apt() {
+    check_apt_health
+}
+
 # --- Main ---
 main() {
-    # Exportar QXDC_LOG para submódulos herdarem o mesmo arquivo
     export QXDC_LOG
 
     log_step "QXDC ${QXDC_VERSION} — Instalação completa (perfil: $PROFILE)"
     echo ""
+
+    # Corrigir estado do apt antes de rodar qualquer módulo
+    if [[ "$QXDC_DRY_RUN" != "true" ]]; then
+        sanitize_apt || {
+            log_error "Abortando: apt em estado inconsistente."
+            exit 1
+        }
+        echo ""
+    fi
 
     local modules=(
         "packages install"
@@ -40,6 +54,8 @@ main() {
         "apps editor"
         "apps browser"
         "apps media"
+        "apps stremio"
+        "apps heroic"
         "apps fastfetch"
         "system hardware"
         "dotfiles deploy"
@@ -53,11 +69,12 @@ main() {
     local current=0
     local failed=0
     local -a failed_modules=()
-    local -a failed_errors=()
+    local -a failed_codes=()
 
-    # Diretório temporário para capturar stderr de cada módulo
-    local err_dir
-    err_dir="$(mktemp -d /tmp/qxdc-errors-XXXXXX)"
+    # Diretório de logs por módulo (sobrevive à execução para análise)
+    local module_log_dir="/tmp/qxdc-modules"
+    rm -rf "$module_log_dir"
+    mkdir -p "$module_log_dir"
 
     for mod in "${modules[@]}"; do
         current=$((current + 1))
@@ -72,38 +89,36 @@ main() {
             log_warn "Módulo não encontrado: $module_path (pulando)"
             failed=$((failed + 1))
             failed_modules+=("$mod")
-            failed_errors+=("Arquivo não encontrado: $module_path")
+            failed_codes+=("N/A")
+            echo "ERRO: Arquivo não encontrado: $module_path" > "$module_log_dir/${current}-${module_name}-${action}.log"
             continue
         fi
 
-        local err_file="$err_dir/${module_name}-${action}.err"
+        # Log individual do módulo: captura stdout + stderr combinados
+        local mod_log="$module_log_dir/${current}-${module_name}-${action}.log"
 
-        # Exportar QXDC_LOG para que submódulos herdem o mesmo log
-        if QXDC_LOG="$QXDC_LOG" bash "$module_path" $flags 2> >(tee "$err_file" >&2); then
+        # Executa módulo com pipefail desabilitado para capturar exit code real
+        local exit_code=0
+        QXDC_LOG="$QXDC_LOG" bash "$module_path" $flags > "$mod_log" 2>&1 || exit_code=$?
+
+        # Mostrar output do módulo no terminal
+        cat "$mod_log"
+
+        if [[ $exit_code -eq 0 ]]; then
             log_ok "[$current/$total] $mod concluído."
         else
-            local exit_code=$?
             log_warn "[$current/$total] $mod falhou (exit code: $exit_code)."
             failed=$((failed + 1))
             failed_modules+=("$mod")
+            failed_codes+=("$exit_code")
 
-            # Capturar últimas linhas de erro
-            local err_summary=""
-            if [[ -s "$err_file" ]]; then
-                err_summary="$(tail -5 "$err_file")"
-            fi
-            failed_errors+=("${err_summary:-Sem saída de erro capturada (verifique o log)}")
-
-            # Mostrar preview do erro inline
-            if [[ -n "$err_summary" ]]; then
-                echo ""
-                log_error "--- Erro em '$mod' (últimas 5 linhas) ---"
-                while IFS= read -r line; do
-                    echo "  $line" >&2
-                    echo "[STDERR] $line" >> "$QXDC_LOG"
-                done <<< "$err_summary"
-                log_error "--- fim ---"
-            fi
+            # Mostrar últimas linhas do output do módulo
+            echo ""
+            log_error "--- Saída de '$mod' (últimas 10 linhas) ---"
+            tail -10 "$mod_log" | while IFS= read -r line; do
+                echo "  $line" >&2
+            done
+            log_error "--- fim ---"
         fi
     done
 
@@ -115,22 +130,22 @@ main() {
         log_warn "$failed módulo(s) com erros."
         echo ""
         log_step "Detalhes dos erros"
+        echo ""
         for i in "${!failed_modules[@]}"; do
-            echo ""
-            log_error "[FALHA] ${failed_modules[$i]}"
-            while IFS= read -r line; do
-                echo "  $line" >&2
-            done <<< "${failed_errors[$i]}"
+            log_error "[FALHA] ${failed_modules[$i]} (exit code: ${failed_codes[$i]})"
         done
-    fi
 
-    # Limpar diretório temporário de erros
-    rm -rf "$err_dir"
+        echo ""
+        log_info "Logs individuais por módulo em: $module_log_dir/"
+        log_info "Para analisar uma falha:"
+        log_info "  cat $module_log_dir/<N>-<modulo>-<acao>.log"
+    fi
 
     if [[ "$QXDC_DRY_RUN" != "true" ]]; then
         echo ""
         log_info "Faça logout/login para aplicar todas as mudanças visuais."
-        log_info "Log completo em: $QXDC_LOG"
+        log_info "Log global em: $QXDC_LOG"
+        log_info "Logs por módulo em: $module_log_dir/"
     fi
 }
 

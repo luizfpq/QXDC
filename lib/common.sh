@@ -69,7 +69,9 @@ check_not_root() {
 }
 
 # --- Execução controlada ---
-# Executa comando respeitando dry-run e logging
+# Executa comando respeitando dry-run e logging.
+# Stdout vai para o log. Stderr vai para o log E é capturado para exibir em caso de falha.
+# Retorna o exit code real do comando.
 run() {
     if [[ "$QXDC_DRY_RUN" == "true" ]]; then
         echo -e "  ${C_YELLOW}[DRY-RUN]${C_RESET} $*"
@@ -82,12 +84,82 @@ run() {
     fi
 
     echo "[CMD] $*" >> "$QXDC_LOG"
-    "$@" >> "$QXDC_LOG" 2>&1
+
+    local err_tmp="/tmp/qxdc-cmd-$$.err"
+    local rc=0
+
+    "$@" >> "$QXDC_LOG" 2>"$err_tmp" || rc=$?
+
+    # Sempre anexar stderr ao log
+    if [[ -s "$err_tmp" ]]; then
+        cat "$err_tmp" >> "$QXDC_LOG"
+    fi
+
+    if [[ $rc -ne 0 ]]; then
+        echo "[FAIL] exit code $rc: $*" >> "$QXDC_LOG"
+        log_error "Comando falhou ($rc): $*"
+        if [[ -s "$err_tmp" ]]; then
+            tail -5 "$err_tmp" | while IFS= read -r line; do
+                log_error "  $line"
+            done
+        fi
+    fi
+
+    rm -f "$err_tmp"
+    return $rc
 }
 
-# Executa com sudo
+# Executa com sudo (sem captura de erro — delega para run)
 run_sudo() {
     run sudo "$@"
+}
+
+# --- Verificação de saúde do apt ---
+# Retorna 0 se apt está funcional, 1 se tem dependências quebradas.
+# Se detect_and_fix=true (padrão), tenta corrigir automaticamente.
+# Pode ser usado por qualquer módulo: check_apt_health || exit 1
+check_apt_health() {
+    local fix="${1:-true}"
+    local check_output
+    check_output="$(sudo apt-get check 2>&1)" || true
+
+    if ! echo "$check_output" | grep -qi "dependências desencontradas\|unmet dependencies\|fix-broken"; then
+        return 0
+    fi
+
+    if [[ "$fix" != "true" ]]; then
+        log_error "apt com dependências quebradas."
+        log_error "$check_output"
+        return 1
+    fi
+
+    log_warn "Dependências quebradas detectadas. Corrigindo..."
+
+    # Identificar e remover pacotes com deps insatisfeitas
+    # Caso conhecido: stremio instalado com dpkg --force-depends (libmpv1 faltando)
+    if echo "$check_output" | grep -qi "libmpv1"; then
+        log_info "Dependência libmpv1 insatisfeita. Removendo pacotes afetados..."
+        sudo dpkg --purge --force-depends stremio >> "$QXDC_LOG" 2>&1 || true
+    fi
+
+    # Corrigir estado geral
+    sudo dpkg --configure -a >> "$QXDC_LOG" 2>&1 || true
+    sudo apt --fix-broken install -y >> "$QXDC_LOG" 2>&1 || true
+
+    # Verificar de novo
+    check_output="$(sudo apt-get check 2>&1)" || true
+    if echo "$check_output" | grep -qi "dependências desencontradas\|unmet dependencies\|fix-broken"; then
+        log_error "Não foi possível corrigir o apt automaticamente."
+        log_error "Saída do apt-get check:"
+        echo "$check_output" | while IFS= read -r line; do
+            log_error "  $line"
+        done
+        log_error "Rode manualmente: sudo apt --fix-broken install"
+        return 1
+    fi
+
+    log_ok "Estado do apt corrigido."
+    return 0
 }
 
 # --- Confirmação ---

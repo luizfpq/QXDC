@@ -127,32 +127,23 @@ configure_tasklist() {
     log_info "Tasklist (window buttons): agrupamento desativado"
 
     # Encontrar o plugin tasklist no painel 1
-    # O tasklist pode ter IDs variáveis; procurar pelo tipo "tasklist"
+    # xfconf-query retorna output localizado (ex: "O valor é uma matriz com 10 itens:")
+    # Filtrar apenas linhas numéricas para obter os IDs dos plugins.
     local plugin_id=""
-    local plugins
-    plugins="$(xfconf-query -c xfce4-panel -p /panels/panel-1/plugin-ids 2>/dev/null)"
+    local plugin_ids
+    plugin_ids="$(xfconf-query -c xfce4-panel -p /panels/panel-1/plugin-ids 2>/dev/null | grep -E '^\s*[0-9]+\s*$' || true)"
 
-    if [[ -n "$plugins" ]]; then
-        for id in $plugins; do
+    if [[ -n "$plugin_ids" ]]; then
+        while IFS= read -r id; do
+            id="$(echo "$id" | tr -d '[:space:]')"
+            [[ -z "$id" ]] && continue
             local ptype
-            ptype="$(xfconf-query -c xfce4-panel -p /plugins/plugin-${id} 2>/dev/null)"
+            ptype="$(xfconf-query -c xfce4-panel -p "/plugins/plugin-${id}" 2>/dev/null || true)"
             if [[ "$ptype" == "tasklist" ]]; then
                 plugin_id="$id"
                 break
             fi
-        done
-    fi
-
-    if [[ -z "$plugin_id" ]]; then
-        # Fallback: tentar IDs comuns para tasklist em configurações padrão XFCE
-        for id in 2 3 4 5 6 7 8; do
-            local ptype
-            ptype="$(xfconf-query -c xfce4-panel -p /plugins/plugin-${id} 2>/dev/null)"
-            if [[ "$ptype" == "tasklist" ]]; then
-                plugin_id="$id"
-                break
-            fi
-        done
+        done <<< "$plugin_ids"
     fi
 
     if [[ -z "$plugin_id" ]]; then
@@ -163,7 +154,7 @@ configure_tasklist() {
     log_info "Tasklist encontrado: plugin-${plugin_id}"
 
     # grouping: 0 = nunca agrupar, 1 = sempre agrupar
-    run xfconf-query -c xfce4-panel -p /plugins/plugin-${plugin_id}/grouping \
+    run xfconf-query -c xfce4-panel -p "/plugins/plugin-${plugin_id}/grouping" \
         -s 0 --create -t uint
 
     log_ok "Agrupamento de janelas desativado (plugin-${plugin_id})."
