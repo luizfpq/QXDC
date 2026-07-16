@@ -23,6 +23,8 @@ packages:
     - fonts-lyx
     - bash-completion
     - xclip
+    - flameshot
+    - xfce4-clipman-plugin
     - gimp
     - inkscape
     - transmission-gtk
@@ -38,6 +40,7 @@ packages:
     - imagemagick
     - xterm
     - parole
+    - xfce4-screenshooter
 
 desktop:
   gtk_theme: Arc-Lighter

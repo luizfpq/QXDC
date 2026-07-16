@@ -284,6 +284,115 @@ configure_tasklist() {
     log_ok "Agrupamento de janelas desativado (plugin-${plugin_id})."
 }
 
+# --- Screenshot (flameshot) ---
+configure_screenshot() {
+    local tool
+    tool="$(config_get "screenshot.tool" "$QXDC_CONFIG")"
+    tool="${tool:-flameshot}"
+
+    log_info "Ferramenta de screenshot: $tool"
+
+    # Definir comandos por ferramenta
+    local cmd_gui cmd_screen cmd_full
+    case "$tool" in
+        flameshot)
+            cmd_gui="flameshot gui"
+            cmd_screen="flameshot screen"
+            cmd_full="flameshot full"
+            ;;
+        xfce4-screenshooter)
+            cmd_gui="xfce4-screenshooter"
+            cmd_screen="xfce4-screenshooter -w"
+            cmd_full="xfce4-screenshooter -f"
+            ;;
+        *)
+            log_warn "Ferramenta de screenshot desconhecida: $tool. Usando flameshot."
+            cmd_gui="flameshot gui"
+            cmd_screen="flameshot screen"
+            cmd_full="flameshot full"
+            ;;
+    esac
+
+    # Limpar atalhos default de screenshot do XFCE (evitar conflito)
+    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/default/Print" -r 2>/dev/null || true
+    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/default/<Shift>Print" -r 2>/dev/null || true
+    xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/default/<Alt>Print" -r 2>/dev/null || true
+
+    # Aplicar atalhos customizados
+    run xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/Print" \
+        -s "$cmd_gui" --create -t string
+    run xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Shift>Print" \
+        -s "$cmd_screen" --create -t string
+    run xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Alt>Print" \
+        -s "$cmd_full" --create -t string
+
+    log_ok "Atalhos de screenshot configurados ($tool)."
+}
+
+# --- Clipboard (xfce4-clipman) ---
+configure_clipboard() {
+    local tool
+    tool="$(config_get "clipboard.tool" "$QXDC_CONFIG")"
+    tool="${tool:-xfce4-clipman}"
+
+    if [[ "$tool" != "xfce4-clipman" ]]; then
+        log_info "Clipboard tool: $tool (sem configuração automática)"
+        return 0
+    fi
+
+    log_info "Clipboard manager: xfce4-clipman"
+
+    # Garantir que o pacote está instalado
+    if ! dpkg -l xfce4-clipman 2>/dev/null | grep -q "^ii"; then
+        log_info "Instalando xfce4-clipman-plugin..."
+        run_sudo apt-get install -qq -y xfce4-clipman-plugin
+    fi
+
+    # Configurações via xfconf (canal xfce4-panel, base /plugins/clipman)
+    local base="/plugins/clipman"
+
+    # Capturar seleção PRIMARY (mouse) no histórico
+    run xfconf-query -c xfce4-panel -p "$base/settings/add-primary-clipboard" \
+        -s true --create -t bool
+
+    # Persistir PRIMARY entre aplicações (não perder ao fechar app)
+    run xfconf-query -c xfce4-panel -p "$base/settings/persistent-primary-clipboard" \
+        -s true --create -t bool
+
+    # Salvar histórico ao sair da sessão
+    run xfconf-query -c xfce4-panel -p "$base/settings/save-on-quit" \
+        -s true --create -t bool
+
+    # Não ignorar PRIMARY no histórico
+    run xfconf-query -c xfce4-panel -p "$base/settings/history-ignore-primary-clipboard" \
+        -s false --create -t bool
+
+    # Tamanho do histórico
+    local max_texts
+    max_texts="$(config_get "clipboard.max_texts_in_history" "$QXDC_CONFIG")"
+    max_texts="${max_texts:-25}"
+    run xfconf-query -c xfce4-panel -p "$base/settings/max-texts-in-history" \
+        -s "$max_texts" --create -t uint
+
+    # Ao selecionar item do histórico, colar automaticamente (1=Ctrl+V, 2=Shift+Insert)
+    local paste_on_activate
+    paste_on_activate="$(config_get "clipboard.paste_on_activate" "$QXDC_CONFIG")"
+    paste_on_activate="${paste_on_activate:-1}"
+    run xfconf-query -c xfce4-panel -p "$base/tweaks/paste-on-activate" \
+        -s "$paste_on_activate" --create -t uint
+
+    # Reordenar itens pelo mais recente ao acessar
+    run xfconf-query -c xfce4-panel -p "$base/tweaks/reorder-items" \
+        -s true --create -t bool
+
+    # Atalho para abrir histórico do clipboard: Ctrl+Alt+V
+    run xfconf-query -c xfce4-keyboard-shortcuts \
+        -p "/commands/custom/<Primary><Alt>v" \
+        -s "xfce4-popup-clipman" --create -t string
+
+    log_ok "Clipboard manager configurado (sync PRIMARY/CLIPBOARD, histórico $max_texts itens, Ctrl+Alt+V)."
+}
+
 # --- Main ---
 main() {
     log_step "Configurações de desktop — perfil: $PROFILE"
@@ -291,11 +400,12 @@ main() {
     load_profile "$PROFILE"
 
     if [[ "$QXDC_DRY_RUN" == "true" ]]; then
-        local ws tb menu desktop_menu
+        local ws tb menu desktop_menu screenshot_tool
         ws="$(config_get "desktop.workspaces" "$QXDC_CONFIG")"
         tb="$(config_get "desktop.thunar_location_bar" "$QXDC_CONFIG")"
         menu="$(config_get "desktop.app_menu" "$QXDC_CONFIG")"
         desktop_menu="$(config_get "desktop.desktop_right_click_menu" "$QXDC_CONFIG")"
+        screenshot_tool="$(config_get "screenshot.tool" "$QXDC_CONFIG")"
         log_info "[DRY-RUN] Configurações que seriam aplicadas:"
         echo "  Workspaces:              ${ws:-1}"
         echo "  Thunar location bar:     ${tb:-ThunarLocationButtons}"
@@ -304,6 +414,13 @@ main() {
         echo "  Desktop icons:           home=false trash=false filesystem=false removable=true"
         echo "  Tasklist grouping:       desativado (never group)"
         echo "  Pulseaudio plugin:       garantir presença no painel 1"
+        echo "  Screenshot tool:         ${screenshot_tool:-flameshot}"
+        echo "    Print → ${screenshot_tool:-flameshot} gui"
+        echo "    Shift+Print → ${screenshot_tool:-flameshot} screen"
+        echo "    Alt+Print → ${screenshot_tool:-flameshot} full"
+        echo "  Clipboard manager:       xfce4-clipman (sync PRIMARY/CLIPBOARD)"
+        echo "    Histórico:             25 itens, salvar ao sair"
+        echo "    Atalho histórico:      Ctrl+Alt+V"
         return 0
     fi
 
@@ -322,6 +439,8 @@ main() {
     configure_thunar
     configure_tasklist
     ensure_pulseaudio_plugin
+    configure_screenshot
+    configure_clipboard
 
     # Restart panel para aplicar mudanças
     xfce4-panel --restart 2>/dev/null &

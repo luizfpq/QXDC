@@ -22,11 +22,14 @@ packages:
     - fonts-noto-color-emoji
     - bash-completion
     - xclip
+    - flameshot
+    - xfce4-clipman-plugin
   purge:
     - mutt
     - hv3
     - imagemagick
     - xterm
+    - xfce4-screenshooter
 
 desktop:
   gtk_theme: Arc-Lighter
@@ -46,6 +49,21 @@ desktop:
   panel2_background_alpha: 12
   wallpaper_url: https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/main-wallpaper.jpg
   cursor_theme: Adwaita
+
+screenshot:
+  tool: flameshot
+  shortcuts:
+    Print: flameshot gui
+    Shift_Print: flameshot screen
+    Alt_Print: flameshot full
+
+clipboard:
+  tool: xfce4-clipman
+  sync_selections: true
+  save_on_quit: true
+  max_texts_in_history: 25
+  paste_on_activate: 1
+  reorder_items: true
 
 apps:
   browser: firefox-esr

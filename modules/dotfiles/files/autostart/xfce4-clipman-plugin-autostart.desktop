@@ -1,0 +1,9 @@
+[Desktop Entry]
+Hidden=false
+Name=Clipman
+Comment=Clipboard Manager
+Icon=xfce4-clipman-plugin
+Exec=xfce4-clipman
+Terminal=false
+Type=Application
+X-XFCE-Autostart=true
