@@ -59,10 +59,10 @@ screenshot:
 
 clipboard:
   tool: xfce4-clipman
-  sync_selections: true
+  sync_selections: false
   save_on_quit: true
   max_texts_in_history: 25
-  paste_on_activate: 1
+  paste_on_activate: 0
   reorder_items: true
 
 apps:

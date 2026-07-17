@@ -351,21 +351,31 @@ configure_clipboard() {
     # Configurações via xfconf (canal xfce4-panel, base /plugins/clipman)
     local base="/plugins/clipman"
 
-    # Capturar seleção PRIMARY (mouse) no histórico
-    run xfconf-query -c xfce4-panel -p "$base/settings/add-primary-clipboard" \
-        -s true --create -t bool
+    # Ler config: sync_selections controla se PRIMARY (mouse) é capturado
+    local sync_selections
+    sync_selections="$(config_get "clipboard.sync_selections" "$QXDC_CONFIG")"
+    sync_selections="${sync_selections:-false}"
 
-    # Persistir PRIMARY entre aplicações (não perder ao fechar app)
-    run xfconf-query -c xfce4-panel -p "$base/settings/persistent-primary-clipboard" \
-        -s true --create -t bool
+    if [[ "$sync_selections" == "true" ]]; then
+        run xfconf-query -c xfce4-panel -p "$base/settings/add-primary-clipboard" \
+            -s true --create -t bool
+        run xfconf-query -c xfce4-panel -p "$base/settings/persistent-primary-clipboard" \
+            -s true --create -t bool
+        run xfconf-query -c xfce4-panel -p "$base/settings/history-ignore-primary-clipboard" \
+            -s false --create -t bool
+    else
+        # Não capturar PRIMARY — mantém CLIPBOARD (Ctrl+C) isolado de seleções de mouse
+        run xfconf-query -c xfce4-panel -p "$base/settings/add-primary-clipboard" \
+            -s false --create -t bool
+        run xfconf-query -c xfce4-panel -p "$base/settings/persistent-primary-clipboard" \
+            -s false --create -t bool
+        run xfconf-query -c xfce4-panel -p "$base/settings/history-ignore-primary-clipboard" \
+            -s true --create -t bool
+    fi
 
     # Salvar histórico ao sair da sessão
     run xfconf-query -c xfce4-panel -p "$base/settings/save-on-quit" \
         -s true --create -t bool
-
-    # Não ignorar PRIMARY no histórico
-    run xfconf-query -c xfce4-panel -p "$base/settings/history-ignore-primary-clipboard" \
-        -s false --create -t bool
 
     # Tamanho do histórico
     local max_texts
@@ -374,10 +384,10 @@ configure_clipboard() {
     run xfconf-query -c xfce4-panel -p "$base/settings/max-texts-in-history" \
         -s "$max_texts" --create -t uint
 
-    # Ao selecionar item do histórico, colar automaticamente (1=Ctrl+V, 2=Shift+Insert)
+    # Ao selecionar item do histórico: 0=nada, 1=Ctrl+V, 2=Shift+Insert
     local paste_on_activate
     paste_on_activate="$(config_get "clipboard.paste_on_activate" "$QXDC_CONFIG")"
-    paste_on_activate="${paste_on_activate:-1}"
+    paste_on_activate="${paste_on_activate:-0}"
     run xfconf-query -c xfce4-panel -p "$base/tweaks/paste-on-activate" \
         -s "$paste_on_activate" --create -t uint
 
@@ -390,7 +400,7 @@ configure_clipboard() {
         -p "/commands/custom/<Primary><Alt>v" \
         -s "xfce4-popup-clipman" --create -t string
 
-    log_ok "Clipboard manager configurado (sync PRIMARY/CLIPBOARD, histórico $max_texts itens, Ctrl+Alt+V)."
+    log_ok "Clipboard manager configurado (sync_selections=$sync_selections, histórico $max_texts itens, Ctrl+Alt+V)."
 }
 
 # --- Main ---
@@ -418,8 +428,9 @@ main() {
         echo "    Print → ${screenshot_tool:-flameshot} gui"
         echo "    Shift+Print → ${screenshot_tool:-flameshot} screen"
         echo "    Alt+Print → ${screenshot_tool:-flameshot} full"
-        echo "  Clipboard manager:       xfce4-clipman (sync PRIMARY/CLIPBOARD)"
+        echo "  Clipboard manager:       xfce4-clipman (CLIPBOARD only, sem sync PRIMARY)"
         echo "    Histórico:             25 itens, salvar ao sair"
+        echo "    Paste on activate:     desativado (colar manualmente)"
         echo "    Atalho histórico:      Ctrl+Alt+V"
         return 0
     fi
