@@ -99,7 +99,7 @@ run() {
     echo "[CMD] $(date +%H:%M:%S) $*" >> "$QXDC_LOG"
 
     local err_tmp
-    err_tmp="$(mktemp "${QXDC_TMPDIR}/cmd-XXXXXX.err" 2>/dev/null || mktemp -p "$QXDC_TMPDIR" cmd-XXXXXX.err)"
+    err_tmp="$(mktemp "${QXDC_TMPDIR}/cmd-err-XXXXXX" 2>/dev/null || mktemp -p "$QXDC_TMPDIR" cmd-err-XXXXXX)"
     local rc=0
 
     "$@" >> "$QXDC_LOG" 2>"$err_tmp" || rc=$?
