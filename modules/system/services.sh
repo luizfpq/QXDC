@@ -79,27 +79,74 @@ main() {
 
     load_profile "$PROFILE"
 
+    # --- Serviços ---
     mapfile -t services < <(config_get_list "packages.services" "$QXDC_CONFIG")
 
-    if [[ ${#services[@]} -eq 0 ]]; then
-        log_info "Nenhum serviço definido em packages.services. Pulando."
-        return 0
+    if [[ ${#services[@]} -gt 0 ]]; then
+        log_info "${#services[@]} serviço(s) a habilitar."
+
+        if [[ "$QXDC_DRY_RUN" == "true" ]]; then
+            log_info "[DRY-RUN] Serviços que seriam habilitados:"
+            printf "  - %s\n" "${services[@]}"
+        else
+            for svc in "${services[@]}"; do
+                enable_service "$svc"
+                start_service "$svc"
+            done
+        fi
     fi
 
-    log_info "${#services[@]} serviço(s) a habilitar."
+    # --- Módulos de kernel (Alpine /etc/modules) ---
+    mapfile -t kmods < <(config_get_list "packages.kernel_modules" "$QXDC_CONFIG")
 
-    if [[ "$QXDC_DRY_RUN" == "true" ]]; then
-        log_info "[DRY-RUN] Serviços que seriam habilitados:"
-        printf "  - %s\n" "${services[@]}"
-        return 0
+    if [[ ${#kmods[@]} -gt 0 ]]; then
+        log_step "Módulos de kernel a carregar no boot"
+
+        if [[ "$QXDC_DRY_RUN" == "true" ]]; then
+            log_info "[DRY-RUN] Módulos que seriam adicionados a /etc/modules:"
+            printf "  - %s\n" "${kmods[@]}"
+        else
+            for mod in "${kmods[@]}"; do
+                if ! grep -qxF "$mod" /etc/modules 2>/dev/null; then
+                    echo "$mod" | run_sudo tee -a /etc/modules > /dev/null
+                    log_ok "Módulo $mod adicionado."
+                else
+                    [[ "$QXDC_VERBOSE" == "true" ]] && log_info "$mod já em /etc/modules."
+                fi
+            done
+        fi
     fi
 
-    for svc in "${services[@]}"; do
-        enable_service "$svc"
-        start_service "$svc"
-    done
+    # --- Tweaks pós-instalação ---
+    mapfile -t tweaks < <(config_get_list "packages.tweaks" "$QXDC_CONFIG")
 
-    log_ok "Serviços configurados."
+    if [[ ${#tweaks[@]} -gt 0 ]]; then
+        log_step "Aplicando tweaks de sistema"
+
+        for tweak in "${tweaks[@]}"; do
+            case "$tweak" in
+                lightdm-no-check-graphical)
+                    # Alpine: elogind não taga seats como gráficos corretamente
+                    local ldm_conf="/etc/lightdm/lightdm.conf"
+                    if [[ -f "$ldm_conf" ]]; then
+                        if grep -q "^logind-check-graphical=false" "$ldm_conf" 2>/dev/null; then
+                            [[ "$QXDC_VERBOSE" == "true" ]] && log_info "lightdm-no-check-graphical já aplicado."
+                        elif [[ "$QXDC_DRY_RUN" == "true" ]]; then
+                            log_info "[DRY-RUN] Seria setado logind-check-graphical=false em $ldm_conf"
+                        else
+                            run_sudo sed -i 's/^#*logind-check-graphical=.*/logind-check-graphical=false/' "$ldm_conf"
+                            log_ok "LightDM: logind-check-graphical=false"
+                        fi
+                    fi
+                    ;;
+                *)
+                    log_warn "Tweak desconhecido: $tweak"
+                    ;;
+            esac
+        done
+    fi
+
+    log_ok "Serviços e sistema configurados."
 }
 
 main

@@ -65,6 +65,19 @@ packages:
     - networkmanager
     - udev
 
+  # Módulos de kernel a carregar no boot (Alpine /etc/modules)
+  kernel_modules:
+    - evdev
+    - hid-generic
+    - usbhid
+    - i8042
+    - atkbd
+    - psmouse
+
+  # Ajustes pós-instalação (Alpine-specific)
+  tweaks:
+    - lightdm-no-check-graphical
+
 desktop:
   gtk_theme: Arc-Lighter
   wm_theme: Arc-Lighter
