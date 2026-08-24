@@ -22,6 +22,11 @@ packages:
     - elogind
     - polkit-elogind
     - dbus
+    # --- Storage / volumes ---
+    - gvfs
+    - gvfs-fuse
+    - udisks2
+    - fuse3
     # --- Audio ---
     - pipewire
     - pipewire-pulse
