@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # --- Variáveis globais ---
-QXDC_VERSION="2.0.0-dev"
+QXDC_VERSION="2.1.0"
 QXDC_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 QXDC_LOG="${QXDC_LOG:-/tmp/qxdc-$(date +%Y%m%d-%H%M%S).log}"
 QXDC_DRY_RUN="${QXDC_DRY_RUN:-false}"
