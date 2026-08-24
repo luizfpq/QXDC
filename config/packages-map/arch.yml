@@ -1,0 +1,70 @@
+# QXDC — Mapeamento de pacotes para Arch Linux
+# Formato: nome_debian: nome_arch
+# Se o pacote não existe no Arch (repos oficiais), indicar AUR ou "~" (ignorar).
+
+# --- Ferramentas base ---
+apt-transport-https: ~
+curl: curl
+wget: wget
+git: git
+htop: htop
+btop: btop
+net-tools: net-tools
+unzip: unzip
+unrar-free: unrar
+lsb-release: lsb-release                 # AUR: lsb-release
+locate: plocate
+bash-completion: bash-completion
+xclip: xclip
+
+# --- Desktop / XFCE ---
+gnome-disk-utility: gnome-disk-utility
+galculator: galculator
+menulibre: ~                              # AUR: menulibre
+flameshot: flameshot
+xfce4-clipman-plugin: xfce4-clipman-plugin
+xfce4-screenshooter: xfce4-screenshooter
+
+# --- Fontes ---
+fonts-noto: noto-fonts
+fonts-noto-color-emoji: noto-fonts-emoji
+fonts-lyx: ~
+
+# --- Tema e visual ---
+arc-theme: arc-gtk-theme
+gnome-themes-extra: gnome-themes-extra
+gtk2-engines-murrine: gtk-engine-murrine
+papirus-icon-theme: papirus-icon-theme
+
+# --- Multimídia ---
+vlc: vlc
+
+# --- Apps ---
+keepassxc: keepassxc
+gimp: gimp
+inkscape: inkscape
+transmission-gtk: transmission-gtk
+thunderbird: thunderbird
+thunderbird-l10n-pt-br: thunderbird-i18n-pt-br
+asciinema: asciinema
+axel: axel
+
+# --- Rede e segurança ---
+openssh-client: openssh
+openssh-server: openssh
+rsync: rsync
+apparmor: apparmor
+
+# --- Navegadores ---
+firefox-esr: firefox
+google-chrome: ~                          # AUR: google-chrome
+
+# --- Editores ---
+code: ~                                   # AUR: visual-studio-code-bin
+
+# --- Pacotes a purgar (equivalentes Arch) ---
+mutt: mutt
+hv3: ~
+imagemagick: imagemagick
+xterm: xterm
+parole: parole
