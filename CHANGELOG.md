@@ -6,6 +6,28 @@ Versionamento segue [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.5.0] - 2026-08-24
+
+### Added
+- Arc-Lighter theme shipped as pre-built asset (assets/themes/arc-lighter.tar.gz)
+- XFCE dotfiles (xsettings, xfwm4, xfce4-desktop, thunar XMLs) for first-boot visual
+- Polkit rule for udisks2: plugdev group mounts disks without password
+- kernel_modules in profile: evdev, hid-generic, usbhid, i8042, atkbd, psmouse
+- tweaks system: lightdm-no-check-graphical, udisks2-plugdev-mount
+- gvfs, gvfs-fuse, udisks2, fuse3 in Alpine profile (disk management)
+
+### Changed
+- Alpine theme.sh extracts Arc-Lighter from asset (testing package is empty)
+- dotfiles/deploy.sh now maps xfce4/ configs to ~/.config/xfce4/
+- system/services.sh handles kernel_modules and tweaks sections from profile
+- Alpine full profile is now a complete desktop-ready configuration
+
+### Fixed
+- Alpine: no /dev/input without evdev module loaded
+- Alpine: LightDM CanGraphical=no (elogind seat tagging)
+- Alpine: disk mount permission denied in Thunar (missing polkit rule)
+- Alpine: arc-theme testing package is empty (use pre-built asset)
+
 ## [2.4.0] - 2026-08-24
 
 ### Added
@@ -77,6 +99,7 @@ Versionamento segue [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+[2.5.0]: https://github.com/luizfpq/QXDC/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/luizfpq/QXDC/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/luizfpq/QXDC/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/luizfpq/QXDC/compare/v2.1.0...v2.2.0
