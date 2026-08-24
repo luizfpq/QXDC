@@ -125,8 +125,11 @@ run() {
 }
 
 # Executa com elevação de privilégio — usa sudo ou doas conforme disponível.
+# Se já é root, executa direto sem elevação.
 run_sudo() {
-    if command_exists sudo; then
+    if [[ $EUID -eq 0 ]]; then
+        run "$@"
+    elif command_exists sudo; then
         run sudo "$@"
     elif command_exists doas; then
         run doas "$@"
