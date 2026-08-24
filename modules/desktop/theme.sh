@@ -41,7 +41,17 @@ install_arc_theme() {
             deps=(arc-theme gnome-themes-extra gtk2-engines-murrine)
             ;;
         alpine)
-            deps=(arc-theme)
+            # Arc-theme no Alpine: extrair do asset (pacote testing é vazio)
+            if [[ ! -d /usr/share/themes/Arc-Lighter ]]; then
+                local arc_asset="$QXDC_ROOT/assets/themes/arc-lighter.tar.gz"
+                if [[ -f "$arc_asset" ]]; then
+                    log_info "Extraindo Arc-Lighter do asset local..."
+                    run_sudo tar -xzf "$arc_asset" -C /usr/share/themes/
+                else
+                    log_warn "Asset arc-lighter.tar.gz não encontrado. Tema Arc pode não funcionar."
+                fi
+            fi
+            deps=()
             ;;
         arch)
             deps=(arc-gtk-theme gnome-themes-extra gtk-engine-murrine)

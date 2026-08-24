@@ -37,7 +37,6 @@ packages:
     - networkmanager-wifi
     # --- Visual / tema ---
     - papirus-icon-theme
-    - arc-theme
     - font-noto
     - font-noto-emoji
     # --- Ferramentas ---

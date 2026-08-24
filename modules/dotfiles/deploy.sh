@@ -13,6 +13,7 @@ parse_common_flags "$@"
 # --- Mapeamento: pasta origem → destino ---
 declare -A DOTFILE_MAP=(
     ["xfce4-terminal"]="$HOME/.config/xfce4/terminal"
+    ["xfce4"]="$HOME/.config/xfce4"
     ["fastfetch"]="$HOME/.config/fastfetch"
     ["autostart"]="$HOME/.config/autostart"
 )
