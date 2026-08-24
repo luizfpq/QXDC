@@ -124,9 +124,16 @@ run() {
     return $rc
 }
 
-# Executa com sudo — delega para run.
+# Executa com elevação de privilégio — usa sudo ou doas conforme disponível.
 run_sudo() {
-    run sudo "$@"
+    if command_exists sudo; then
+        run sudo "$@"
+    elif command_exists doas; then
+        run doas "$@"
+    else
+        log_error "Nem sudo nem doas encontrados. Instale um deles."
+        return 1
+    fi
 }
 
 # --- Download seguro ---
