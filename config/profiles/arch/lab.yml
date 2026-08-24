@@ -1,0 +1,33 @@
+# Perfil: arch/lab
+# Ambiente de laboratorio/testes no Arch. Debug tools, sem visual.
+
+packages:
+  install:
+    - curl
+    - wget
+    - git
+    - htop
+    - btop
+    - net-tools
+    - unzip
+    - bash-completion
+    - openssh
+    - rsync
+    - nano
+    - fastfetch
+    - strace
+    - tcpdump
+    - nmap
+    - iperf
+    - bind
+    - mtr
+    - lsof
+    - file
+    - tree
+    - jq
+    - tmux
+    - ncdu
+  purge: []
+  services:
+    - sshd
+    - NetworkManager

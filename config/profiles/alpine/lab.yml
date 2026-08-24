@@ -1,0 +1,34 @@
+# Perfil: alpine/lab
+# Ambiente de laboratorio/testes no Alpine. Debug tools, sem visual.
+# Bom para VMs de teste, troubleshooting de rede, e desenvolvimento.
+
+packages:
+  install:
+    - curl
+    - wget
+    - git
+    - htop
+    - btop
+    - net-tools
+    - unzip
+    - bash-completion
+    - openssh
+    - rsync
+    - nano
+    - fastfetch
+    - strace
+    - tcpdump
+    - nmap
+    - iperf3
+    - bind-tools
+    - mtr
+    - lsof
+    - file
+    - tree
+    - jq
+    - tmux
+    - ncdu
+  purge: []
+  services:
+    - dbus
+    - networking

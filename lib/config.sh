@@ -122,20 +122,26 @@ config_get() {
 }
 
 # Carrega um perfil (merge defaults + profile)
-# Uso: load_profile "minimal"
+# Resolução: config/profiles/<distro_family>/<profile>.yml → config/profiles/<profile>.yml → defaults.yml
+# Uso: load_profile "full"  (resolve para alpine/full.yml se rodando no Alpine)
 load_profile() {
     local profile="${1:-minimal}"
     local defaults="$QXDC_ROOT/config/defaults.yml"
-    local profile_file="$QXDC_ROOT/config/profiles/${profile}.yml"
+
+    # Tentar resolver por família de distro primeiro
+    local distro_profile="$QXDC_ROOT/config/profiles/${DISTRO_FAMILY}/${profile}.yml"
+    local generic_profile="$QXDC_ROOT/config/profiles/${profile}.yml"
 
     if [[ ! -f "$defaults" ]]; then
         log_error "Arquivo de defaults não encontrado: $defaults"
         return 1
     fi
 
-    # Profile file é opcional — se não existir, usa só defaults
-    if [[ -n "$profile" && -f "$profile_file" ]]; then
-        QXDC_CONFIG="$profile_file"
+    if [[ -n "$profile" && -f "$distro_profile" ]]; then
+        QXDC_CONFIG="$distro_profile"
+        log_info "Perfil carregado: ${DISTRO_FAMILY}/${profile}"
+    elif [[ -n "$profile" && -f "$generic_profile" ]]; then
+        QXDC_CONFIG="$generic_profile"
         log_info "Perfil carregado: $profile"
     else
         QXDC_CONFIG="$defaults"

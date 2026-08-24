@@ -1,0 +1,22 @@
+# Perfil: alpine/minimal
+# Instalacao minima no Alpine. Ferramentas essenciais, sem desktop grafico.
+# Ideal para servidores, containers ou sistemas headless.
+
+packages:
+  install:
+    - curl
+    - wget
+    - git
+    - htop
+    - btop
+    - net-tools
+    - unzip
+    - bash-completion
+    - openssh
+    - rsync
+    - nano
+    - fastfetch
+  purge: []
+  services:
+    - dbus
+    - networking

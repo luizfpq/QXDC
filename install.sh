@@ -31,36 +31,48 @@ show_banner() {
 
 # --- Sugerir perfil baseado na distro ---
 suggest_profile() {
-    case "$DISTRO_FAMILY" in
-        alpine) echo "alpine-live" ;;
-        arch)   echo "arch-live" ;;
-        debian)
-            # Se tem XFCE rodando, sugere full; senão, minimal
-            if pgrep -x xfce4-session &>/dev/null; then
-                echo "full"
-            else
-                echo "full"
-            fi
-            ;;
-        *) echo "minimal" ;;
-    esac
+    echo "full"
 }
 
 # --- Listar perfis disponíveis ---
 list_profiles() {
-    local profiles_dir="$SCRIPT_DIR/config/profiles"
+    local profiles_dir="$SCRIPT_DIR/config/profiles/$DISTRO_FAMILY"
+    local fallback_dir="$SCRIPT_DIR/config/profiles"
     local i=1
     PROFILES=()
-    for f in "$profiles_dir"/*.yml; do
-        [[ -f "$f" ]] || continue
-        local name
-        name="$(basename "$f" .yml)"
-        PROFILES+=("$name")
-        local marker=""
-        [[ "$name" == "$SUGGESTED" ]] && marker=" $(_green "<-- recomendado")"
-        echo "  $i) $name$marker"
-        i=$((i + 1))
-    done
+
+    # Listar perfis da distro detectada
+    if [[ -d "$profiles_dir" ]]; then
+        for f in "$profiles_dir"/*.yml; do
+            [[ -f "$f" ]] || continue
+            local name
+            name="$(basename "$f" .yml)"
+            PROFILES+=("$name")
+            local marker=""
+            [[ "$name" == "$SUGGESTED" ]] && marker=" $(_green "<-- recomendado")"
+            # Ler primeira linha de comentario como descricao
+            local desc
+            desc="$(grep -m1 "^# Perfil:" "$f" 2>/dev/null | sed 's/^# Perfil: //' || echo "")"
+            [[ -z "$desc" ]] && desc="$(sed -n '2s/^# //p' "$f" 2>/dev/null)"
+            echo "  $i) $name$marker"
+            [[ -n "$desc" ]] && echo "     $desc"
+            i=$((i + 1))
+        done
+    fi
+
+    # Se nao encontrou perfis por distro, listar genéricos
+    if [[ ${#PROFILES[@]} -eq 0 ]]; then
+        for f in "$fallback_dir"/*.yml; do
+            [[ -f "$f" ]] || continue
+            local name
+            name="$(basename "$f" .yml)"
+            PROFILES+=("$name")
+            local marker=""
+            [[ "$name" == "$SUGGESTED" ]] && marker=" $(_green "<-- recomendado")"
+            echo "  $i) $name$marker"
+            i=$((i + 1))
+        done
+    fi
 }
 
 # --- Selecionar perfil ---

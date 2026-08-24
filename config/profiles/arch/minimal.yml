@@ -1,0 +1,21 @@
+# Perfil: arch/minimal
+# Instalacao minima no Arch. Ferramentas essenciais, sem desktop grafico.
+
+packages:
+  install:
+    - curl
+    - wget
+    - git
+    - htop
+    - btop
+    - net-tools
+    - unzip
+    - bash-completion
+    - openssh
+    - rsync
+    - nano
+    - fastfetch
+  purge: []
+  services:
+    - sshd
+    - NetworkManager
