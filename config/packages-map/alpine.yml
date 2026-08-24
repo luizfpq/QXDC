@@ -1,0 +1,74 @@
+# QXDC — Mapeamento de pacotes para Alpine Linux
+# Formato: nome_debian: nome_alpine
+# Se o pacote não existe no Alpine, usar "~" (ignorar) ou substituição funcional.
+# Repositórios: main, community, testing (indicado em comentário quando necessário)
+
+# --- Ferramentas base ---
+apt-transport-https: ~
+curl: curl
+wget: wget
+git: git
+htop: htop
+btop: btop
+net-tools: net-tools
+unzip: unzip
+unrar-free: unrar
+lsb-release: ~
+locate: mlocate
+bash-completion: bash-completion
+xclip: xclip
+
+# --- Desktop / XFCE ---
+gnome-disk-utility: gnome-disk-utility
+galculator: galculator
+menulibre: ~
+flameshot: flameshot
+xfce4-clipman-plugin: xfce4-clipman-plugin
+xfce4-screenshooter: xfce4-screenshooter
+
+# --- Fontes ---
+fonts-noto: font-noto
+fonts-noto-color-emoji: font-noto-emoji
+fonts-lyx: ~
+
+# --- Tema e visual ---
+arc-theme: arc-theme                  # testing
+gnome-themes-extra: gnome-themes-extra
+gtk2-engines-murrine: gtk-murrine-engine  # nota: gist usa gtk-murrine-engine
+papirus-icon-theme: papirus-icon-theme
+
+# --- Multimídia ---
+vlc: vlc
+
+# --- Apps ---
+keepassxc: keepassxc
+gimp: gimp
+inkscape: inkscape
+transmission-gtk: transmission-gtk
+thunderbird: thunderbird
+thunderbird-l10n-pt-br: ~
+
+# --- Rede e segurança ---
+openssh-client: openssh-client-default
+openssh-server: openssh-server
+rsync: rsync
+axel: axel
+apparmor: ~
+
+# --- Dev tools ---
+asciinema: asciinema
+
+# --- Navegadores ---
+firefox-esr: firefox
+google-chrome: ~                      # não disponível; usar firefox ou chromium
+
+# --- Editores ---
+code: ~                               # instalar via flatpak ou manual
+
+# --- Pacotes a purgar (equivalentes Alpine) ---
+mutt: mutt
+hv3: ~
+imagemagick: imagemagick
+xterm: xterm
+parole: parole
+xfce4-screenshooter: xfce4-screenshooter

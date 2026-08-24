@@ -27,14 +27,21 @@ done
 
 # --- Instalar Firefox ESR ---
 install_firefox() {
-    log_step "Instalando Firefox ESR"
+    log_step "Instalando Firefox"
 
     if command_exists firefox-esr || command_exists firefox; then
         log_info "Firefox já instalado."
         return 0
     fi
 
-    pkg_install firefox-esr
+    case "$DISTRO_FAMILY" in
+        alpine)
+            pkg_install firefox
+            ;;
+        *)
+            pkg_install firefox-esr
+            ;;
+    esac
 }
 
 # --- Instalar Google Chrome ---
@@ -53,6 +60,10 @@ install_chrome() {
             download_file "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" "$tmp_deb" || return 1
             log_info "Instalando .deb..."
             run_sudo apt-get install -qq -y "$tmp_deb"
+            ;;
+        alpine)
+            log_warn "Google Chrome não disponível para Alpine. Usando chromium como alternativa."
+            pkg_install chromium
             ;;
         arch)
             if command_exists yay; then

@@ -24,9 +24,13 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-# --- Sanitizar estado do apt antes de tudo ---
-sanitize_apt() {
-    check_apt_health
+# --- Sanitizar estado do gerenciador de pacotes antes de tudo ---
+sanitize_pkg_manager() {
+    case "$DISTRO_FAMILY" in
+        debian) check_apt_health ;;
+        alpine) run_sudo apk fix --force 2>/dev/null || true ;;
+        *) return 0 ;;
+    esac
 }
 
 # --- Main ---
@@ -36,10 +40,10 @@ main() {
     log_step "QXDC ${QXDC_VERSION} — Instalação completa (perfil: $PROFILE)"
     echo ""
 
-    # Corrigir estado do apt antes de rodar qualquer módulo
+    # Corrigir estado do gerenciador de pacotes antes de rodar qualquer módulo
     if [[ "$QXDC_DRY_RUN" != "true" ]]; then
-        sanitize_apt || {
-            log_error "Abortando: apt em estado inconsistente."
+        sanitize_pkg_manager || {
+            log_error "Abortando: gerenciador de pacotes em estado inconsistente."
             exit 1
         }
         echo ""

@@ -34,16 +34,25 @@ install_arc_theme() {
         return 0
     fi
 
-    # Instalar via pacote da distro (preferencial)
-    # O pacote arc-theme inclui Arc, Arc-Dark, Arc-Darker, Arc-Lighter
-    local deps=(arc-theme gnome-themes-extra gtk2-engines-murrine)
+    # Dependências por família de distro
+    local -a deps=()
+    case "$DISTRO_FAMILY" in
+        debian)
+            deps=(arc-theme gnome-themes-extra gtk2-engines-murrine)
+            ;;
+        alpine)
+            deps=(arc-theme gnome-themes-extra gtk-murrine-engine)
+            ;;
+        arch)
+            deps=(arc-gtk-theme gnome-themes-extra gtk-engine-murrine)
+            ;;
+        *)
+            deps=(arc-theme gnome-themes-extra)
+            ;;
+    esac
 
-    log_info "Instalando arc-theme via apt..."
-    for dep in "${deps[@]}"; do
-        if ! is_installed "$dep" 2>/dev/null; then
-            run_sudo apt-get install -qq -y "$dep"
-        fi
-    done
+    log_info "Instalando arc-theme via pkg_install..."
+    pkg_install "${deps[@]}"
 
     if [[ -d /usr/share/themes/Arc-Dark ]]; then
         log_ok "Tema Arc instalado via pacote."
@@ -60,8 +69,8 @@ install_papirus_icons() {
     if is_installed papirus-icon-theme 2>/dev/null; then
         log_info "papirus-icon-theme já instalado."
     else
-        log_info "Instalando papirus-icon-theme via apt..."
-        run_sudo apt-get install -qq -y papirus-icon-theme
+        log_info "Instalando papirus-icon-theme..."
+        pkg_install papirus-icon-theme
     fi
 
     # papirus-folders para customizar cor das pastas

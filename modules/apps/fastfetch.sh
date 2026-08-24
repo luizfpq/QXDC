@@ -46,6 +46,10 @@ main() {
                     log_ok "fastfetch instalado via GitHub release."
                 fi
                 ;;
+            alpine)
+                pkg_install fastfetch
+                log_ok "fastfetch instalado."
+                ;;
             arch)
                 run_sudo pacman -S --noconfirm fastfetch
                 log_ok "fastfetch instalado."

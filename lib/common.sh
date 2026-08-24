@@ -241,7 +241,20 @@ command_exists() {
 }
 
 is_installed() {
-    dpkg -l "$1" 2>/dev/null | grep -q "^ii" 2>/dev/null
+    case "$DISTRO_FAMILY" in
+        alpine)
+            apk info -e "$1" &>/dev/null
+            ;;
+        arch)
+            pacman -Qi "$1" &>/dev/null
+            ;;
+        redhat)
+            rpm -q "$1" &>/dev/null
+            ;;
+        *)
+            dpkg -l "$1" 2>/dev/null | grep -q "^ii" 2>/dev/null
+            ;;
+    esac
 }
 
 # Parseia flags comuns (chamar no início de cada módulo)

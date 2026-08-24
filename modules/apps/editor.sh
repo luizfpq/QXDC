@@ -48,6 +48,12 @@ install_vscode() {
 
             run rm -f /tmp/packages.microsoft.gpg
             ;;
+        alpine)
+            log_warn "VSCode não disponível como pacote Alpine nativo."
+            log_info "Alternativas: instalar via flatpak (flatpak install flathub com.visualstudio.code)"
+            log_info "Ou usar 'mousepad' como editor leve (já no perfil alpine-live)."
+            return 0
+            ;;
         arch)
             if command_exists yay; then
                 run yay -S --noconfirm visual-studio-code-bin
