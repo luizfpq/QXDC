@@ -201,31 +201,36 @@ _enable_debian_nonfree() {
     log_ok "Repositórios contrib + non-free habilitados."
 }
 
-# --- Alpine: habilitar community ---
+# --- Alpine: habilitar community + testing ---
 _enable_alpine_community() {
     local repos="/etc/apk/repositories"
 
+    # Community
     if grep -qE "^[^#].*/community$" "$repos" 2>/dev/null; then
         [[ "$QXDC_VERBOSE" == "true" ]] && log_info "Repositório community já habilitado."
-        return 0
-    fi
-
-    log_info "Habilitando repositório community..."
-
-    # Descomentar linha de community se existir comentada
-    if grep -qE "^#.*/community$" "$repos" 2>/dev/null; then
-        run_sudo sed -i 's|^#\(.*community\)$|\1|' "$repos"
     else
-        # Adicionar baseado no main existente
-        local main_url
-        main_url="$(grep -m1 "^[^#].*/main$" "$repos" | sed 's|/main$||')"
-        if [[ -n "$main_url" ]]; then
-            echo "${main_url}/community" | run_sudo tee -a "$repos" > /dev/null
+        log_info "Habilitando repositório community..."
+        if grep -qE "^#.*/community$" "$repos" 2>/dev/null; then
+            run_sudo sed -i 's|^#\(.*community\)$|\1|' "$repos"
+        else
+            local main_url
+            main_url="$(grep -m1 "^[^#].*/main$" "$repos" | sed 's|/main$||')"
+            if [[ -n "$main_url" ]]; then
+                echo "${main_url}/community" | run_sudo tee -a "$repos" > /dev/null
+            fi
         fi
     fi
 
+    # Testing (necessário para arc-theme e outros)
+    if grep -qE "^[^#].*/testing$" "$repos" 2>/dev/null; then
+        [[ "$QXDC_VERBOSE" == "true" ]] && log_info "Repositório testing já habilitado."
+    else
+        log_info "Habilitando repositório testing (edge)..."
+        echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" | run_sudo tee -a "$repos" > /dev/null
+    fi
+
     pkg_update
-    log_ok "Repositório community habilitado."
+    log_ok "Repositórios community + testing habilitados."
 }
 
 # Inicializa detecção automaticamente ao ser sourced

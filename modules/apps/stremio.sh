@@ -228,6 +228,12 @@ install_stremio() {
 main() {
     log_step "Instalação do Stremio — perfil: $PROFILE"
 
+    # Stremio só funciona em Debian (usa .deb + equivs)
+    if [[ "$DISTRO_FAMILY" != "debian" ]]; then
+        log_warn "Stremio não suportado em $DISTRO_FAMILY (requer .deb). Pulando."
+        return 0
+    fi
+
     load_profile "$PROFILE"
 
     if [[ "$QXDC_DRY_RUN" == "true" ]]; then

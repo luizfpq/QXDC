@@ -26,8 +26,6 @@ packages:
     - xfce4-whiskermenu-plugin
     - papirus-icon-theme
     - arc-theme
-    - gtk-murrine-engine
-    - gnome-themes-extra
     - mousepad
     - thunar
     - firefox

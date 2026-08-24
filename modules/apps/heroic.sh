@@ -136,6 +136,12 @@ install_heroic() {
 main() {
     log_step "Heroic Games Launcher — perfil: $PROFILE"
 
+    # Heroic só funciona em Debian (usa .deb)
+    if [[ "$DISTRO_FAMILY" != "debian" ]]; then
+        log_warn "Heroic não suportado em $DISTRO_FAMILY (requer .deb). Pulando."
+        return 0
+    fi
+
     load_profile "$PROFILE"
 
     resolve_latest_release || exit 1

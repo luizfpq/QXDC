@@ -41,7 +41,7 @@ install_arc_theme() {
             deps=(arc-theme gnome-themes-extra gtk2-engines-murrine)
             ;;
         alpine)
-            deps=(arc-theme gnome-themes-extra gtk-murrine-engine)
+            deps=(arc-theme)
             ;;
         arch)
             deps=(arc-gtk-theme gnome-themes-extra gtk-engine-murrine)
