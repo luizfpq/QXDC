@@ -1,6 +1,6 @@
 # QXDC — Quirino's XFCE Default Config
 
-> Configuracao automatizada e opinativa de desktop XFCE para Debian.
+> Configuracao automatizada e opinativa de desktop XFCE para Debian, Alpine e Arch.
 > Porque reinstalar o sistema nao deveria significar perder duas horas clicando em menus.
 
 ---
@@ -13,106 +13,75 @@ A gente ja tem mods e estilos de sobra pros nossos desktops. Mas eu geralmente p
 
 ## O que faz
 
-QXDC transforma um Debian recem-instalado com XFCE num desktop produtivo em poucos minutos. Sem assistente grafico, sem perguntas bobas, sem wallpapers de paisagem suica que ninguem pediu.
+QXDC transforma uma instalacao Linux fresca num desktop XFCE produtivo em poucos minutos. Sem assistente grafico, sem perguntas bobas, sem wallpapers de paisagem suica que ninguem pediu.
 
-Instala pacotes, configura tema, ajusta paineis, aplica dotfiles e remove o lixo que vem de brinde — tudo via CLI, tudo reproduzivel, tudo versionado.
+Instala pacotes, configura tema, ajusta paineis, aplica dotfiles, habilita servicos e remove o lixo que vem de brinde. Tudo via CLI, tudo reproduzivel, tudo versionado. Funciona em Debian, Alpine e Arch.
 
-## Screenshots
+## Distribuicoes suportadas
 
-| Desktop | Aplicacoes |
-|---------|-----------|
-| ![desktop](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-desktop.png) | ![apps](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-apps.png) |
-
-| Chrome | LightDM |
-|--------|---------|
-| ![chrome](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-chrome.png) | ![lightdm](https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/screenshot-lightdm.png) |
+| Familia | Distros | Gerenciador | Perfil |
+|---------|---------|-------------|--------|
+| Debian | Debian 12+, Ubuntu 22.04+, Mint, Pop | apt | `full`, `minimal`, `lab` |
+| Alpine | Alpine 3.24+ | apk | `alpine-live` |
+| Arch | Arch, Manjaro, EndeavourOS | pacman/yay | `arch-live` |
 
 ## Comeco rapido
 
-### Pre-requisitos
-
-- Um sistema baseado em Debian (Debian 12+, Ubuntu 22.04+) com XFCE instalado
-- `git` instalado (se nao tiver: `sudo apt install git`)
-- Um usuario com privilegios `sudo`
-- Conexao com a internet (pacotes serao baixados)
-
-### Passo 1 — Baixar
-
-Abra um terminal. Voce tem duas opcoes:
-
-**Opcao A — Com git (recomendado):**
+### Instalador interativo (recomendado)
 
 ```bash
-sudo apt install git    # pule se o git ja estiver instalado
 git clone https://github.com/luizfpq/QXDC.git
 cd QXDC
-chmod +x qxdc.sh
+./install.sh
 ```
 
-**Opcao B — Sem git (baixar ZIP):**
+O instalador detecta a distro, sugere o perfil correto e guia voce pelo processo. Mostra o que vai fazer antes de executar.
 
-Se voce nao tem git e nao quer instalar agora, baixe o ZIP direto:
+Flags:
+- `./install.sh --auto` — pula perguntas, detecta tudo automaticamente
+- `./install.sh --dry-run` — preview sem executar nada
+
+### Alpine Linux (a partir de instalacao base)
 
 ```bash
-wget https://github.com/luizfpq/QXDC/archive/refs/heads/v2.0.zip -O qxdc.zip
-unzip qxdc.zip
-cd QXDC-v2.0
-chmod +x qxdc.sh
+apk add git bash
+git clone https://github.com/luizfpq/QXDC.git && cd QXDC
+./install.sh
 ```
 
-> Se o `wget` tambem nao estiver disponivel: abra o Firefox, va em https://github.com/luizfpq/QXDC, clique no botao verde "Code" e depois em "Download ZIP". Extraia e abra um terminal dentro da pasta.
+O perfil `alpine-live` instala a stack completa de desktop: Xorg, XFCE4, LightDM, Pipewire, NetworkManager, drivers, tema e apps. Leva o Alpine de um sistema base puro ate um desktop grafico completo.
 
-### Passo 2 — Visualizar antes (opcional, mas recomendado)
-
-Antes de mudar qualquer coisa, voce pode ver o que o QXDC faria. Isso eh seguro — nada eh instalado ou modificado:
+### Arch Linux
 
 ```bash
-./qxdc.sh packages install --profile full --dry-run
+git clone https://github.com/luizfpq/QXDC.git && cd QXDC
+./install.sh
 ```
 
-Voce vai ver uma lista de pacotes que seriam instalados. Se parecer bom, siga em frente.
-
-### Passo 3 — Executar
-
-Execute os modulos em ordem. Cada um cuida de uma parte diferente da configuracao:
+### Debian (tradicional)
 
 ```bash
-# Instalar pacotes essenciais (editores, ferramentas, fontes, utilitarios)
+sudo apt install git
+git clone https://github.com/luizfpq/QXDC.git && cd QXDC
+./install.sh
+```
+
+### Manual (avancado)
+
+Rode modulos individuais:
+
+```bash
 ./qxdc.sh packages install --profile full --yes
-
-# Remover pacotes indesejados que vem com o Debian por padrao
-./qxdc.sh packages purge --profile full --yes
-
-# Aplicar o tema visual (Arc-Lighter + icones Papirus)
 ./qxdc.sh desktop theme --profile full --yes
-
-# Configurar comportamento do desktop (workspaces, Thunar, paineis)
-./qxdc.sh desktop settings --yes
-
-# Definir o wallpaper (desktop + tela de login)
-./qxdc.sh desktop wallpaper --yes
-
-# Instalar Visual Studio Code
-./qxdc.sh apps editor --yes
-
-# Instalar navegador + integracao de tema
+./qxdc.sh system services --profile alpine-live --yes
 ./qxdc.sh apps browser --profile full --yes
-
-# Instalar fastfetch com logo ASCII customizado
-./qxdc.sh apps fastfetch --yes
 ```
 
-### Passo 4 — Aproveitar
+Preview antes de rodar:
 
-Faca logout e login novamente (ou reinicie) pra ver todas as mudancas aplicadas. Pronto.
-
-### Escolhendo um perfil
-
-Nao sabe qual perfil usar? Versao curta:
-
-- **`full`** — Voce quer um desktop completo e pronto pra trabalhar. Escolha esse na duvida.
-- **`minimal`** — Voce so quer os pacotes essenciais, sem mudancas visuais.
-- **`lab`** — Voce esta montando uma VM de teste e precisa de ferramentas de debug, nao de um desktop bonito.
+```bash
+./qxdc.sh all install --profile alpine-live --dry-run
+```
 
 ## Visual
 
@@ -121,47 +90,62 @@ Nao sabe qual perfil usar? Versao curta:
 | GTK/WM Theme | Arc-Lighter | [jnsh/arc-theme](https://github.com/jnsh/arc-theme) |
 | Icons | Papirus-Dark | [PapirusDevelopmentTeam/papirus-icon-theme](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme) |
 | Cor das Pastas | paleorange | [PapirusDevelopmentTeam/papirus-folders](https://github.com/PapirusDevelopmentTeam/papirus-folders) |
-| Cores do Terminal | Nighty-Lighter | Baseado no [Gogh-Co/Gogh — Nighty](https://github.com/Gogh-Co/Gogh/blob/master/themes/Nighty.yml) |
+| Cores do Terminal | Nighty-Lighter | Baseado no [Gogh-Co/Gogh](https://github.com/Gogh-Co/Gogh/blob/master/themes/Nighty.yml) |
 | System Fetch | fastfetch | [fastfetch-cli/fastfetch](https://github.com/fastfetch-cli/fastfetch) |
 | Font | Noto Sans 10 | [Google Noto Fonts](https://fonts.google.com/noto) |
-| Painel 2 | Dock com ~12% opacidade | — |
-| Wallpaper | [QXDC-docs/main-wallpaper.jpg](https://github.com/luizfpq/QXDC-docs) | — |
-| LightDM | Mesmo wallpaper + Arc-Lighter | — |
+| Painel 2 | Dock com ~12% opacidade | |
+| Wallpaper | [QXDC-docs/main-wallpaper.jpg](https://github.com/luizfpq/QXDC-docs) | |
+| LightDM | Mesmo wallpaper + Arc-Lighter | |
 
 ## Estrutura
 
 ```
 QXDC/
-├── qxdc.sh              # Entrypoint (CLI)
-├── lib/                 # Bibliotecas compartilhadas
-│   ├── common.sh        # Log, cores, flags, dry-run
-│   ├── distro.sh        # Deteccao de distro e pkg manager
-│   └── config.sh        # Parser de configuracao YAML-like
-├── modules/             # Modulos independentes
-│   ├── packages/        # install.sh, purge.sh
-│   ├── desktop/         # theme.sh, settings.sh, wallpaper.sh
-│   ├── apps/            # browser.sh, editor.sh, fastfetch.sh
-│   ├── dotfiles/        # files/ (configs prontas)
-│   └── system/          # (futuro: sources, firmware)
+├── install.sh               # Instalador interativo (v2.3+)
+├── qxdc.sh                  # Entrypoint CLI (uso avancado)
+├── lib/
+│   ├── common.sh            # Log, cores, flags, run(), run_sudo()
+│   ├── distro.sh            # Deteccao de distro, pkg_install/remove/update
+│   └── config.sh            # Parser de configuracao YAML-like
+├── modules/
+│   ├── packages/            # install.sh, purge.sh
+│   ├── desktop/             # theme.sh, settings.sh, wallpaper.sh
+│   ├── apps/                # browser.sh, editor.sh, fastfetch.sh, ...
+│   ├── dotfiles/            # files/ (configs prontas)
+│   └── system/              # services.sh, hardware.sh, nvidia.sh
 ├── config/
-│   ├── defaults.yml     # Configuracao padrao
-│   └── profiles/        # minimal, full, lab
+│   ├── defaults.yml         # Configuracao padrao (Debian)
+│   ├── profiles/            # minimal, full, lab, alpine-live, arch-live
+│   └── packages-map/        # Mapeamento Debian->Alpine/Arch (referencia)
+├── CONTRIBUTING.md          # Guia para contribuidores
 └── tests/
-    └── shellcheck.sh    # Lint
+    └── shellcheck.sh        # Lint
 ```
 
 ## Perfis
 
-| Perfil | Pra que |
-|--------|---------|
-| `minimal` | O minimo pra nao sofrer. Pacotes essenciais e so. |
-| `full` | Desktop produtivo completo com tudo configurado. |
-| `lab` | VM de laboratorio — ferramentas de debug, sem frescura visual. |
+| Perfil | Alvo | O que faz |
+|--------|------|-----------|
+| `full` | Debian com XFCE | Desktop produtivo completo, tudo configurado |
+| `minimal` | Debian com XFCE | Pacotes essenciais, sem mudancas visuais |
+| `lab` | Debian VM | Ferramentas de debug, sem frescura visual |
+| `alpine-live` | Alpine (base) | Stack completa: Xorg + XFCE + LightDM + drivers + servicos + apps |
+| `arch-live` | Arch (base) | Stack completa: mesmo que alpine-live com nomes pacman |
+
+## Suporte multi-distro
+
+O QXDC detecta a distro rodando e se adapta:
+
+- **Gerenciador de pacotes:** apt (Debian), apk (Alpine), pacman/yay (Arch)
+- **Elevacao de privilegio:** sudo (Debian/Arch), doas (Alpine), ou nenhum se ja root
+- **Gerenciador de servicos:** systemd (Debian/Arch), OpenRC (Alpine)
+- **Repositorios:** habilita contrib+non-free (Debian), community+testing (Alpine)
+- **Modulos Debian-only:** stremio, heroic pulam graciosamente em outras distros
 
 ## Flags
 
 | Flag | O que faz |
-|------|-----------|
+|------|-----------| 
 | `--dry-run` | Mostra o que faria sem executar nada |
 | `--yes` / `-y` | Pula confirmacoes (ideal pra scripts) |
 | `--verbose` / `-v` | Saida detalhada |
@@ -170,51 +154,29 @@ QXDC/
 ## Diagnostico de erros
 
 Quando um modulo falha, o QXDC mostra:
-
 - O exit code do modulo
 - As ultimas 5 linhas de stderr inline
-- Um resumo final listando todos os modulos que falharam com seus erros
+- Um resumo final com todos os modulos que falharam
 
-Exemplo de saida com falha:
-
-```
-[WARN] [3/9] desktop theme falhou (exit code: 1).
-
-[ERRO] --- Erro em 'desktop theme' (ultimas 5 linhas) ---
-  [ERRO] DBUS_SESSION_BUS_ADDRESS nao definido.
-  [ERRO] Rode sem sudo ou com 'sudo -E' para preservar DISPLAY/D-Bus.
-[ERRO] --- fim ---
-
-:: Detalhes dos erros
-[ERRO] [FALHA] desktop theme
-  [ERRO] DBUS_SESSION_BUS_ADDRESS nao definido.
-  [ERRO] Rode sem sudo ou com 'sudo -E' para preservar DISPLAY/D-Bus.
-```
+Logs sao escritos em `/tmp/qxdc-YYYYMMDD-HHMMSS.log`. Logs por modulo ficam em `/tmp/qxdc-modules/`.
 
 ### Problemas comuns
 
 | Sintoma | Causa | Solucao |
 |---------|-------|---------|
-| "DBUS_SESSION_BUS_ADDRESS nao definido" | `sudo` sem `-E` ou execucao fora da sessao XFCE | Rode sem sudo (o script pede quando precisa) ou use `sudo -E` |
-| "DISPLAY nao definido" | Execucao via SSH ou TTY sem X | Rode dentro de um terminal grafico na sessao XFCE |
-| "xfconfd nao esta rodando" | Sessao XFCE nao esta ativa | Faca login grafico no XFCE antes de executar |
-| Modulos desktop falham mas packages funciona | Packages so precisa de apt/sudo; desktop precisa de sessao grafica | Normal — rode os modulos desktop depois de logar no XFCE |
+| "DBUS_SESSION_BUS_ADDRESS not defined" | Rodando fora de sessao XFCE | Rode modulos desktop depois de logar no XFCE |
+| "sudo/doas: command not found" | Nenhum instalado | Instale um deles, ou rode como root |
+| "doas: a tty is required" | Sessao nao-interativa com `persist` | Use `permit nopass :wheel` no doas.conf ou rode como root |
+| Modulos desktop falham mas packages funciona | Sem sessao grafica | Esperado. Pacotes instalam primeiro, tema aplica depois do login |
+| "no such package" no Alpine | Falta repo testing | QXDC habilita automaticamente via `enable_nonfree_repos` |
 
-### Log
+## Contribuindo
 
-Toda execucao grava em `/tmp/qxdc-YYYYMMDD-HHMMSS.log`. Quando executado via `all install`, todos os modulos compartilham o mesmo arquivo de log.
-
-## Suporte
-
-- **Primario:** Debian 12+, Debian 13 (trixie) — XFCE 4.20
-- **Secundario:** Ubuntu 22.04+, derivados Debian
-- **Best-effort:** Arch Linux
+Veja [CONTRIBUTING.md](CONTRIBUTING.md) pra instrucoes sobre como adicionar suporte a novas distros, criar perfis e escrever modulos.
 
 ## Historico
 
-O QXDC nasceu em 2021 como um script bash monolitico pra resolver um problema simples: eu reinstalo Debian com frequencia e toda vez perdia tempo configurando a mesma coisa. Ao longo dos anos ele cresceu, ficou baguncado, tentei migrar pra Ansible (ironqui), tentei separar assets (QXDC-docs), tentei fazer um kit de ferramentas separado (lftk). Nenhuma dessas tentativas resolveu o problema central.
-
-A versao 2.0 eh uma reescrita do zero com a licao aprendida: **modular, declarativo, sem interatividade**. Cada modulo faz uma coisa, cada perfil define o que instalar, e `--dry-run` existe pra quando voce quer ver antes de fazer.
+O QXDC comecou em 2021 como um script bash monolitico. A versao 2.0 foi uma reescrita do zero: **modular, declarativo, sem interatividade**. A partir da v2.1, expandiu pra Alpine e Arch, tornando-se um configurador de desktop verdadeiramente agnostico de distro.
 
 ## Repositorios relacionados
 
@@ -230,4 +192,4 @@ MIT
 
 ---
 
-<sup>1</sup> **Refisefuquis** — "Release de Fim de Semana e Fundo de Quintal". Em palavras simples: releases sem suporte, sem inovacao e sem proposito — apenas uma aventura caseira de um desenvolvedor com tempo e um computador disponivel. O QXDC eh orgulhosamente uma dessas, exceto que esse aqui funciona de verdade.
+<sup>1</sup> **Refisefuquis** — "Release de Fim de Semana e Fundo de Quintal". Em palavras simples: releases sem suporte, sem inovacao e sem proposito. O QXDC eh orgulhosamente uma dessas, exceto que esse aqui funciona de verdade.
