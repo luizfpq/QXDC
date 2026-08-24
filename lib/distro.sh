@@ -26,6 +26,9 @@ detect_distro() {
         debian|ubuntu|linuxmint|pop|elementary|zorin)
             DISTRO_FAMILY="debian"
             ;;
+        alpine)
+            DISTRO_FAMILY="alpine"
+            ;;
         arch|manjaro|endeavouros|garuda)
             DISTRO_FAMILY="arch"
             ;;
@@ -48,6 +51,9 @@ pkg_install_cmd() {
     case "$DISTRO_FAMILY" in
         debian)
             _arr=(apt-get install -qq -y)
+            ;;
+        alpine)
+            _arr=(apk add --no-interactive)
             ;;
         arch)
             if command_exists yay; then
@@ -77,6 +83,9 @@ pkg_remove_cmd() {
         debian)
             _arr=(apt-get purge -qq -y)
             ;;
+        alpine)
+            _arr=(apk del --no-interactive)
+            ;;
         arch)
             _arr=(pacman -Rns --noconfirm)
             ;;
@@ -95,6 +104,9 @@ pkg_update() {
     case "$DISTRO_FAMILY" in
         debian)
             run_sudo apt-get update -qq
+            ;;
+        alpine)
+            run_sudo apk update
             ;;
         arch)
             run_sudo pacman -Sy
@@ -157,15 +169,20 @@ pkg_remove() {
     fi
 }
 
-# Habilita repositórios contrib + non-free (Debian)
-# Debian 12+ separou non-free-firmware (firmware livre de redistribuir) de non-free (drivers
-# proprietários, codecs, etc). Muitos pacotes úteis vivem em contrib/non-free.
+# Habilita repositórios extras conforme a distro
+# Debian: contrib + non-free
+# Alpine: community + testing (se necessário)
 enable_nonfree_repos() {
-    local sources="/etc/apt/sources.list"
+    case "$DISTRO_FAMILY" in
+        debian) _enable_debian_nonfree ;;
+        alpine) _enable_alpine_community ;;
+        *) return 0 ;;
+    esac
+}
 
-    if [[ "$DISTRO_FAMILY" != "debian" ]]; then
-        return 0
-    fi
+# --- Debian: contrib + non-free ---
+_enable_debian_nonfree() {
+    local sources="/etc/apt/sources.list"
 
     # Já tem contrib + non-free?
     if grep -qE "^deb .* main contrib non-free" "$sources" 2>/dev/null; then
@@ -182,6 +199,33 @@ enable_nonfree_repos() {
 
     pkg_update
     log_ok "Repositórios contrib + non-free habilitados."
+}
+
+# --- Alpine: habilitar community ---
+_enable_alpine_community() {
+    local repos="/etc/apk/repositories"
+
+    if grep -qE "^[^#].*/community$" "$repos" 2>/dev/null; then
+        [[ "$QXDC_VERBOSE" == "true" ]] && log_info "Repositório community já habilitado."
+        return 0
+    fi
+
+    log_info "Habilitando repositório community..."
+
+    # Descomentar linha de community se existir comentada
+    if grep -qE "^#.*/community$" "$repos" 2>/dev/null; then
+        run_sudo sed -i 's|^#\(.*community\)$|\1|' "$repos"
+    else
+        # Adicionar baseado no main existente
+        local main_url
+        main_url="$(grep -m1 "^[^#].*/main$" "$repos" | sed 's|/main$||')"
+        if [[ -n "$main_url" ]]; then
+            echo "${main_url}/community" | run_sudo tee -a "$repos" > /dev/null
+        fi
+    fi
+
+    pkg_update
+    log_ok "Repositório community habilitado."
 }
 
 # Inicializa detecção automaticamente ao ser sourced

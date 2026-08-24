@@ -1,0 +1,61 @@
+# Perfil: alpine-live
+# Desktop XFCE leve para Alpine Linux (live USB ou instalação mínima).
+# Pacotes nomeados conforme repositórios Alpine (main + community).
+# arc-theme requer testing.
+
+packages:
+  install:
+    - curl
+    - wget
+    - git
+    - htop
+    - btop
+    - net-tools
+    - unzip
+    - mlocate
+    - bash-completion
+    - xclip
+    - openssh
+    - rsync
+    - font-noto
+    - font-noto-emoji
+    - galculator
+    - keepassxc
+    - flameshot
+    - xfce4-clipman-plugin
+    - xfce4-whiskermenu-plugin
+    - papirus-icon-theme
+    - arc-theme
+    - gtk-murrine-engine
+    - gnome-themes-extra
+    - mousepad
+    - thunar
+    - firefox
+    - fastfetch
+  purge:
+    - xterm
+
+desktop:
+  gtk_theme: Arc-Lighter
+  wm_theme: Arc-Lighter
+  icons: Papirus-Dark
+  papirus_folders_color: paleorange
+  font: Noto Sans 10
+  monospace_font: JetBrains Mono 10
+  cursor_theme: Adwaita
+  workspaces: 1
+  thunar_location_bar: ThunarLocationButtons
+  app_menu: whiskermenu
+  desktop_right_click_menu: false
+  icons_show_home: false
+  icons_show_trash: false
+  icons_show_filesystem: false
+  icons_show_removable: true
+  panel2_background_alpha: 12
+  wallpaper_url: https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/main-wallpaper.jpg
+
+apps:
+  browser: firefox
+  browser_theme: arc
+  editor: mousepad
+  terminal: xfce4-terminal
