@@ -13,7 +13,7 @@ QXDC_YES="${QXDC_YES:-false}"
 QXDC_VERBOSE="${QXDC_VERBOSE:-false}"
 
 # Diretório para arquivos temporários do QXDC (limpo no exit)
-QXDC_TMPDIR="$(mktemp -d /tmp/qxdc-run-XXXXXX)"
+QXDC_TMPDIR="$(mktemp -d "${TMPDIR:-/tmp}/qxdc-run-XXXXXX" 2>/dev/null || mktemp -d -p "${TMPDIR:-/tmp}" qxdc-run-XXXXXX)"
 
 # Garantir DISPLAY para xfconf-query e xrandr (necessário via SSH)
 export DISPLAY="${DISPLAY:-:0}"
@@ -99,7 +99,7 @@ run() {
     echo "[CMD] $(date +%H:%M:%S) $*" >> "$QXDC_LOG"
 
     local err_tmp
-    err_tmp="$(mktemp "${QXDC_TMPDIR}/cmd-XXXXXX.err")"
+    err_tmp="$(mktemp "${QXDC_TMPDIR}/cmd-XXXXXX.err" 2>/dev/null || mktemp -p "$QXDC_TMPDIR" cmd-XXXXXX.err)"
     local rc=0
 
     "$@" >> "$QXDC_LOG" 2>"$err_tmp" || rc=$?
