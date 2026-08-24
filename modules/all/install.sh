@@ -83,12 +83,23 @@ main() {
 
     for mod in "${modules[@]}"; do
         current=$((current + 1))
-        echo ""
-        log_step "[$current/$total] qxdc.sh $mod"
 
         local module_name="${mod%% *}"
         local action="${mod##* }"
         local module_path="$QXDC_ROOT/modules/$module_name/$action.sh"
+
+        # Barra de progresso
+        local pct=$((current * 100 / total))
+        local bar_len=30
+        local filled=$((pct * bar_len / 100))
+        local empty=$((bar_len - filled))
+        local bar
+        bar=$(printf "%${filled}s" | tr ' ' '#')$(printf "%${empty}s" | tr ' ' '-')
+
+        echo ""
+        echo -e "${C_BOLD}  [${bar}] ${current}/${total} (${pct}%)${C_RESET}"
+        echo -e "  ${C_BLUE}${module_name}/${action}${C_RESET}"
+        echo ""
 
         if [[ ! -f "$module_path" ]]; then
             log_warn "Módulo não encontrado: $module_path (pulando)"
@@ -102,12 +113,10 @@ main() {
         # Log individual do módulo: captura stdout + stderr combinados
         local mod_log="$module_log_dir/${current}-${module_name}-${action}.log"
 
-        # Executa módulo
+        # Executa módulo com saída em tempo real (tee para log + terminal)
         local exit_code=0
-        QXDC_LOG="$QXDC_LOG" bash "$module_path" "${flags[@]}" > "$mod_log" 2>&1 || exit_code=$?
-
-        # Mostrar output do módulo no terminal
-        cat "$mod_log"
+        QXDC_LOG="$QXDC_LOG" bash "$module_path" "${flags[@]}" 2>&1 | tee "$mod_log" || exit_code=${PIPESTATUS[0]}
+        exit_code=${PIPESTATUS[0]:-$exit_code}
 
         if [[ $exit_code -eq 0 ]]; then
             log_ok "[$current/$total] $mod concluído."
@@ -127,6 +136,8 @@ main() {
         fi
     done
 
+    echo ""
+    echo -e "${C_BOLD}  [##############################] ${total}/${total} (100%)${C_RESET}"
     echo ""
     log_step "Resultado final"
     log_ok "$((total - failed))/$total módulos concluídos com sucesso."
