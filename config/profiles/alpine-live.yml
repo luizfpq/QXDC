@@ -1,10 +1,41 @@
 # Perfil: alpine-live
 # Desktop XFCE leve para Alpine Linux (live USB ou instalação mínima).
 # Pacotes nomeados conforme repositórios Alpine (main + community).
-# arc-theme requer testing.
+# arc-theme requer testing (habilitado automaticamente via enable_nonfree_repos).
 
 packages:
   install:
+    # --- Display server + drivers ---
+    - xorg-server
+    - xf86-input-libinput
+    - xf86-video-fbdev
+    - xf86-video-ati
+    - mesa-dri-gallium
+    - eudev
+    # --- Desktop environment ---
+    - xfce4
+    - xfce4-terminal
+    - xfce4-clipman-plugin
+    - xfce4-whiskermenu-plugin
+    - lightdm-gtk-greeter
+    # --- Session management ---
+    - elogind
+    - polkit-elogind
+    - dbus
+    # --- Audio ---
+    - pipewire
+    - pipewire-pulse
+    - pipewire-alsa
+    - wireplumber
+    # --- Network ---
+    - networkmanager
+    - networkmanager-wifi
+    # --- Visual / tema ---
+    - papirus-icon-theme
+    - arc-theme
+    - font-noto
+    - font-noto-emoji
+    # --- Ferramentas ---
     - curl
     - wget
     - git
@@ -12,26 +43,27 @@ packages:
     - btop
     - net-tools
     - unzip
-    - mlocate
     - bash-completion
     - xclip
     - openssh
     - rsync
-    - font-noto
-    - font-noto-emoji
     - galculator
     - keepassxc
     - flameshot
-    - xfce4-clipman-plugin
-    - xfce4-whiskermenu-plugin
-    - papirus-icon-theme
-    - arc-theme
     - mousepad
     - thunar
     - firefox
     - fastfetch
   purge:
     - xterm
+
+  # Serviços a habilitar no boot (Alpine OpenRC)
+  services:
+    - dbus
+    - elogind
+    - lightdm
+    - networkmanager
+    - udev
 
 desktop:
   gtk_theme: Arc-Lighter

@@ -52,6 +52,7 @@ main() {
     local modules=(
         "packages install"
         "packages purge"
+        "system services"
         "desktop theme"
         "desktop settings"
         "desktop wallpaper"
