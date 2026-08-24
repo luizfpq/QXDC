@@ -139,6 +139,19 @@ main() {
                         fi
                     fi
                     ;;
+                udisks2-plugdev-mount)
+                    # Permite grupo plugdev montar discos sem senha via polkit
+                    local polkit_rule="/etc/polkit-1/rules.d/10-udisks2.rules"
+                    local src_rule="$QXDC_ROOT/modules/dotfiles/files/polkit/10-udisks2.rules"
+                    if [[ -f "$polkit_rule" ]]; then
+                        [[ "$QXDC_VERBOSE" == "true" ]] && log_info "Regra udisks2 polkit já existe."
+                    elif [[ "$QXDC_DRY_RUN" == "true" ]]; then
+                        log_info "[DRY-RUN] Seria copiado $src_rule para $polkit_rule"
+                    else
+                        run_sudo cp "$src_rule" "$polkit_rule"
+                        log_ok "Polkit: plugdev pode montar discos sem senha"
+                    fi
+                    ;;
                 *)
                     log_warn "Tweak desconhecido: $tweak"
                     ;;

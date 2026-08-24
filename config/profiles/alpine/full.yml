@@ -82,6 +82,7 @@ packages:
   # Ajustes pós-instalação (Alpine-specific)
   tweaks:
     - lightdm-no-check-graphical
+    - udisks2-plugdev-mount
 
 desktop:
   gtk_theme: Arc-Lighter

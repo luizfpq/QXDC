@@ -1,0 +1,8 @@
+polkit.addRule(function(action, subject) {
+    var start = "org.freedesktop.udisks2.";
+    if (action.id.indexOf(start) == 0 &&
+        subject.isInGroup("plugdev") &&
+        subject.local && subject.active) {
+        return polkit.Result.YES;
+    }
+});
