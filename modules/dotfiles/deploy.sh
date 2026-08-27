@@ -16,6 +16,7 @@ declare -A DOTFILE_MAP=(
     ["xfce4"]="$HOME/.config/xfce4"
     ["fastfetch"]="$HOME/.config/fastfetch"
     ["autostart"]="$HOME/.config/autostart"
+    ["htop"]="$HOME/.config/htop"
 )
 
 # --- Main ---

@@ -1,11 +1,11 @@
 [Configuration]
-ColorForeground=#2e3440
+ColorForeground=#383a42
 ColorBackground=#e7e8eb
-ColorCursor=#2e3440
+ColorCursor=#383a42
 ColorCursorUseDefault=FALSE
 ColorBoldIsBright=FALSE
-ColorPalette=#373d48;#9b3e46;#095b32;#808020;#1d3e6f;#823065;#3a7458;#828282;#5c6370;#d0555f;#119955;#dfe048;#4674b8;#ed86c9;#70d2a4;#dfdfdf
-TabActivityColor=#9b3e46
+ColorPalette=#383a42;#c9372c;#3d8a3d;#a06f01;#0171a3;#a626a4;#077d96;#d4d5d9;#4f525e;#a52a2a;#2e7d32;#7a5e00;#015f8a;#871f87;#066a7f;#9ca0a8
+TabActivityColor=#c9372c
 MiscAlwaysShowTabs=FALSE
 MiscBell=FALSE
 MiscBellUrgent=FALSE

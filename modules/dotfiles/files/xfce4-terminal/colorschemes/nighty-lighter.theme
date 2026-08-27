@@ -1,0 +1,15 @@
+# Nighty-Lighter — QXDC Terminal Color Scheme
+# Based on: One Half Light (https://github.com/sonph/onehalf)
+# Adapted for QXDC gray background (#e7e8eb) with darkened palette
+# for proper contrast on non-white light backgrounds.
+# Original One Half Light by Son A. Pham (sonph)
+# Adaptation by Luiz Fernando P. Quirino (QXDC project)
+
+[Scheme]
+Name=Nighty-Lighter
+ColorForeground=#383a42
+ColorBackground=#e7e8eb
+ColorCursor=#383a42
+ColorCursorUseDefault=FALSE
+ColorBoldIsBright=FALSE
+ColorPalette=#383a42;#c9372c;#3d8a3d;#a06f01;#0171a3;#a626a4;#077d96;#d4d5d9;#4f525e;#a52a2a;#2e7d32;#7a5e00;#015f8a;#871f87;#066a7f;#9ca0a8
