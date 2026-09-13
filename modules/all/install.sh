@@ -54,6 +54,7 @@ main() {
         "packages purge"
         "system services"
         "desktop theme"
+        "desktop panel"
         "desktop settings"
         "desktop wallpaper"
         "apps editor"

@@ -49,34 +49,62 @@ download_wallpaper() {
 }
 
 # --- Aplicar no desktop XFCE ---
+# Estratégia em duas frentes, para funcionar em qualquer máquina:
+#   1) Detecta monitores CONECTADOS via xrandr e cria a chave para cada um.
+#      Os nomes variam por hardware/driver (eDP-1, HDMI-2, VGA-0, DP-1, LVDS-1...),
+#      por isso nunca fixamos nomes — sempre lemos do xrandr em runtime.
+#   2) Reescreve QUALQUER chave last-image já existente no canal (cobre perfis de
+#      monitor pré-existentes, incluindo workspaces adicionais e o formato legado
+#      monitor0/monitor1).
 apply_desktop_wallpaper() {
     local wallpaper="$1"
+    local applied=0
 
     log_info "Aplicando wallpaper no desktop: $wallpaper"
 
-    # XFCE 4.18+: usa monitorNOME/workspace0/last-image
-    # Detectar monitores conectados
+    # 1) Monitores conectados (nome = 1º campo da linha " connected").
+    #    xrandr não usa espaços em nomes de saída, então o 1º campo é seguro.
     local monitors
-    monitors="$(xrandr 2>/dev/null | grep ' connected' | awk '{print $1}')"
+    monitors="$(xrandr 2>/dev/null | awk '/ connected/{print $1}')"
 
     if [[ -n "$monitors" ]]; then
         while IFS= read -r mon; do
-            log_info "  Monitor: $mon"
-            run xfconf-query -c xfce4-desktop -p "/backdrop/screen0/monitor${mon}/workspace0/last-image" \
+            [[ -z "$mon" ]] && continue
+            log_info "  Monitor conectado: $mon"
+            run xfconf-query -c xfce4-desktop \
+                -p "/backdrop/screen0/monitor${mon}/workspace0/last-image" \
                 -s "$wallpaper" --create -t string
-            run xfconf-query -c xfce4-desktop -p "/backdrop/screen0/monitor${mon}/workspace0/image-style" \
+            run xfconf-query -c xfce4-desktop \
+                -p "/backdrop/screen0/monitor${mon}/workspace0/image-style" \
                 -s 5 --create -t int
+            applied=$((applied + 1))
         done <<< "$monitors"
+    else
+        log_warn "xrandr não retornou monitores conectados; usando apenas chaves existentes."
     fi
 
-    # Também setar no formato legado (monitor0/monitor1) por compatibilidade
+    # 2) Reescrever todas as chaves last-image/image-path já existentes.
+    #    Preserva compatibilidade com perfis antigos e workspaces extras.
     local props
-    props="$(xfconf-query -c xfce4-desktop --list 2>/dev/null | grep -E 'last-image|image-path')"
+    props="$(xfconf-query -c xfce4-desktop --list 2>/dev/null | grep -E 'last-image|image-path' || true)"
 
     if [[ -n "$props" ]]; then
         while IFS= read -r prop; do
+            [[ -z "$prop" ]] && continue
             run xfconf-query -c xfce4-desktop -p "$prop" -s "$wallpaper"
         done <<< "$props"
+    fi
+
+    if [[ "$applied" -eq 0 && -z "$props" ]]; then
+        # Nenhum monitor detectado e nenhuma chave existente: criar um fallback
+        # genérico para que o xfdesktop tenha ao menos um backdrop definido.
+        log_warn "Nenhuma chave de monitor encontrada; criando fallback monitor0."
+        run xfconf-query -c xfce4-desktop \
+            -p "/backdrop/screen0/monitor0/workspace0/last-image" \
+            -s "$wallpaper" --create -t string
+        run xfconf-query -c xfce4-desktop \
+            -p "/backdrop/screen0/monitor0/workspace0/image-style" \
+            -s 5 --create -t int
     fi
 
     # Reload xfdesktop
