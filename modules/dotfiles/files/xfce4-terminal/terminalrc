@@ -32,5 +32,5 @@ MiscUseShiftArrowsToScroll=FALSE
 MiscSlimTabs=FALSE
 MiscNewTabAdjacent=FALSE
 MiscSearchDialogOpacity=100
-FontName=Monospace 10
+FontName=Hack Nerd Font Mono 10
 ScrollingBar=TERMINAL_SCROLLBAR_NONE

@@ -53,6 +53,7 @@ main() {
         "packages install"
         "packages purge"
         "system services"
+        "desktop fonts"
         "desktop theme"
         "desktop panel"
         "desktop settings"

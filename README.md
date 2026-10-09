@@ -105,6 +105,7 @@ Preview before running:
 | Terminal Colors | Nighty-Lighter | Based on [Gogh-Co/Gogh](https://github.com/Gogh-Co/Gogh/blob/master/themes/Nighty.yml) |
 | System Fetch | fastfetch | [fastfetch-cli/fastfetch](https://github.com/fastfetch-cli/fastfetch) |
 | Font | Noto Sans 10 | [Google Noto Fonts](https://fonts.google.com/noto) |
+| Mono Font | Hack Nerd Font Mono 10 | [ryanoasis/nerd-fonts](https://github.com/ryanoasis/nerd-fonts) |
 | Panel 2 | Dock with ~12% opacity | |
 | Wallpaper | [QXDC-docs/main-wallpaper.jpg](https://github.com/luizfpq/QXDC-docs) | |
 | LightDM | Same wallpaper + Arc-Lighter | |
@@ -121,7 +122,7 @@ QXDC/
 │   └── config.sh            # YAML-like config parser
 ├── modules/
 │   ├── packages/            # install.sh, purge.sh
-│   ├── desktop/             # theme.sh, settings.sh, wallpaper.sh
+│   ├── desktop/             # fonts.sh, theme.sh, settings.sh, wallpaper.sh
 │   ├── apps/                # browser.sh, editor.sh, fastfetch.sh, ...
 │   ├── dotfiles/            # files/ (ready-made configs)
 │   └── system/              # services.sh, hardware.sh, nvidia.sh

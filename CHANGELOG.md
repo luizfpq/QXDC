@@ -6,6 +6,24 @@ Versionamento segue [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.6.0] - 2026-10-08
+
+### Added
+- Módulo `desktop/fonts.sh`: instala Nerd Fonts (não existem nos repos) a partir
+  dos releases do GitHub, system-wide em `/usr/share/fonts/nerd-fonts/`
+- Chave de perfil `fonts.nerd_fonts` (lista de releases a instalar); default
+  embutido: Hack + NerdFontsSymbolsOnly
+- Hack Nerd Font como fonte mono principal; Symbols Nerd Font como fallback de
+  `monospace` via fontconfig (`.conf` instalado em `/etc/fonts/conf.d/`)
+- Etapa `desktop fonts` no fluxo `all install` (roda antes de `desktop theme`)
+
+### Changed
+- `monospace_font` dos perfis full (debian/arch/alpine): JetBrains Mono → Hack
+  Nerd Font Mono (ícones em TUIs/prompts: monitor IronLAN, fastfetch, starship)
+- dotfiles `xfce4-terminal/terminalrc`: FontName → Hack Nerd Font Mono 10
+
+---
+
 ## [2.5.0] - 2026-08-24
 
 ### Added

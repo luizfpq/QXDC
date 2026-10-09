@@ -93,6 +93,7 @@ Preview antes de rodar:
 | Cores do Terminal | Nighty-Lighter | Baseado no [Gogh-Co/Gogh](https://github.com/Gogh-Co/Gogh/blob/master/themes/Nighty.yml) |
 | System Fetch | fastfetch | [fastfetch-cli/fastfetch](https://github.com/fastfetch-cli/fastfetch) |
 | Font | Noto Sans 10 | [Google Noto Fonts](https://fonts.google.com/noto) |
+| Font Mono | Hack Nerd Font Mono 10 | [ryanoasis/nerd-fonts](https://github.com/ryanoasis/nerd-fonts) |
 | Painel 2 | Dock com ~12% opacidade | |
 | Wallpaper | [QXDC-docs/main-wallpaper.jpg](https://github.com/luizfpq/QXDC-docs) | |
 | LightDM | Mesmo wallpaper + Arc-Lighter | |
@@ -109,7 +110,7 @@ QXDC/
 │   └── config.sh            # Parser de configuracao YAML-like
 ├── modules/
 │   ├── packages/            # install.sh, purge.sh
-│   ├── desktop/             # theme.sh, settings.sh, wallpaper.sh
+│   ├── desktop/             # fonts.sh, theme.sh, settings.sh, wallpaper.sh
 │   ├── apps/                # browser.sh, editor.sh, fastfetch.sh, ...
 │   ├── dotfiles/            # files/ (configs prontas)
 │   └── system/              # services.sh, hardware.sh, nvidia.sh

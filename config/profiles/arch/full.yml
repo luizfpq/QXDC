@@ -42,7 +42,7 @@ desktop:
   icons: Papirus-Dark
   papirus_folders_color: paleorange
   font: Noto Sans 10
-  monospace_font: JetBrains Mono 10
+  monospace_font: Hack Nerd Font Mono 10
   cursor_theme: Adwaita
   workspaces: 1
   thunar_location_bar: ThunarLocationButtons
@@ -54,6 +54,13 @@ desktop:
   icons_show_removable: true
   panel2_background_alpha: 12
   wallpaper_url: https://raw.githubusercontent.com/luizfpq/QXDC-docs/main/main-wallpaper.jpg
+
+# Nerd Fonts (ícones para TUIs/prompts: monitor IronLAN, fastfetch, starship).
+# Baixadas dos releases do GitHub (não existem no pacman). Nome = zip do release.
+fonts:
+  nerd_fonts:
+    - Hack                 # fonte mono principal com ícones
+    - NerdFontsSymbolsOnly # fallback de 'monospace' via fontconfig
 
 apps:
   browser: firefox
