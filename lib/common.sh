@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # --- Variáveis globais ---
-QXDC_VERSION="2.6.0"
+QXDC_VERSION="2.6.1"
 QXDC_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 QXDC_LOG="${QXDC_LOG:-/tmp/qxdc-$(date +%Y%m%d-%H%M%S).log}"
 QXDC_DRY_RUN="${QXDC_DRY_RUN:-false}"
@@ -40,13 +40,17 @@ else
 fi
 
 # --- Logging ---
+# IMPORTANTE: todas as funções de log escrevem em STDERR (>&2), nunca em stdout.
+# Isso mantém o stdout limpo para funções que "retornam" valores via echo e são
+# capturadas por $(...). Misturar log e retorno no stdout corrompe o valor
+# capturado (ex.: wallpaper_path capturando "[INFO] Baixando: ..." junto do path).
 log_info() {
-    echo -e "${C_BLUE}[INFO]${C_RESET} $*"
+    echo -e "${C_BLUE}[INFO]${C_RESET} $*" >&2
     echo "[INFO] $(date +%H:%M:%S) $*" >> "$QXDC_LOG"
 }
 
 log_ok() {
-    echo -e "${C_GREEN}[OK]${C_RESET} $*"
+    echo -e "${C_GREEN}[OK]${C_RESET} $*" >&2
     echo "[OK] $(date +%H:%M:%S) $*" >> "$QXDC_LOG"
 }
 
@@ -61,7 +65,7 @@ log_error() {
 }
 
 log_step() {
-    echo -e "${C_BOLD}:: $*${C_RESET}"
+    echo -e "${C_BOLD}:: $*${C_RESET}" >&2
     echo "[STEP] $(date +%H:%M:%S) $*" >> "$QXDC_LOG"
 }
 

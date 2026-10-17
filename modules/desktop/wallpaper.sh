@@ -26,6 +26,9 @@ done
 WALLPAPER_DIR="/usr/share/backgrounds/qxdc"
 
 # --- Download do wallpaper ---
+# Contrato: esta função "retorna" o caminho do wallpaper APENAS via stdout.
+# Toda mensagem de log vai para stderr (ver lib/common.sh), então o stdout
+# contém somente o path — seguro para captura via wallpaper_path="$(download_wallpaper ...)".
 download_wallpaper() {
     local url="$1"
     local filename
@@ -34,7 +37,7 @@ download_wallpaper() {
 
     if [[ -f "$dest" ]]; then
         log_info "Wallpaper já existe: $dest"
-        echo "$dest"
+        printf '%s\n' "$dest"
         return 0
     fi
 
@@ -45,7 +48,7 @@ download_wallpaper() {
         return 1
     fi
 
-    echo "$dest"
+    printf '%s\n' "$dest"
 }
 
 # --- Aplicar no desktop XFCE ---
@@ -117,6 +120,15 @@ apply_desktop_wallpaper() {
 apply_login_wallpaper() {
     local wallpaper="$1"
     local greeter_conf="/etc/lightdm/lightdm-gtk-greeter.conf"
+
+    # Validação defensiva: o background PRECISA ser um caminho único e existente.
+    # Protege o greeter de valores corrompidos (ex.: multi-linha, mensagens de log).
+    # Um background= inválido faz o lightdm-gtk-greeter falhar o parse do arquivo.
+    if [[ "$(printf '%s' "$wallpaper" | wc -l)" -ne 0 ]] || [[ ! -f "$wallpaper" ]]; then
+        log_error "Caminho de wallpaper inválido para o greeter: '$wallpaper'"
+        log_error "Esperado: caminho único de um arquivo existente. Abortando config do login."
+        return 1
+    fi
 
     log_info "Aplicando wallpaper na tela de login: $wallpaper"
 
