@@ -134,10 +134,14 @@ configure_thunar() {
 ensure_pulseaudio_plugin() {
     log_info "Verificando plugin pulseaudio no painel 1..."
 
-    # 1) Ler IDs do painel 1
+    # 1) Ler IDs do painel 1 (um ID por linha).
+    #    NÃO usar `tr -d [:space:]` aqui: isso removeria também as quebras de
+    #    linha e concatenaria todos os IDs num número gigante (ex.: 1,2,3 →
+    #    "123"), que estoura o range de gint32 no xfconf-query. Removemos apenas
+    #    espaços/tabs laterais de cada linha, preservando um ID por linha.
     local panel1_ids
     panel1_ids="$(xfconf-query -c xfce4-panel -p /panels/panel-1/plugin-ids 2>/dev/null \
-        | grep -E '^\s*[0-9]+\s*$' | tr -d '[:space:]' || true)"
+        | grep -E '^\s*[0-9]+\s*$' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' || true)"
 
     if [[ -z "$panel1_ids" ]]; then
         log_warn "Não foi possível ler plugin-ids do painel 1. Pulando."

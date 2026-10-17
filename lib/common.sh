@@ -306,11 +306,25 @@ check_desktop_session() {
         errors=$((errors + 1))
     fi
 
-    # xfconfd rodando
+    # xfconfd rodando — tenta ativá-lo sob demanda se DISPLAY+DBUS estão presentes.
+    # xfconfd é um serviço D-Bus activatable: uma query qualquer o inicia. Isso
+    # permite rodar os módulos de desktop via SSH (com DISPLAY/DBUS exportados)
+    # sem precisar de um terminal aberto na sessão XFCE. Só vira erro se, mesmo
+    # com DISPLAY+DBUS, não for possível subir/alcançar o xfconfd.
     if ! pgrep -x xfconfd &>/dev/null; then
-        log_warn "xfconfd não está rodando. xfconf-query pode falhar."
-        log_warn "Certifique-se de estar em uma sessão XFCE ativa."
-        errors=$((errors + 1))
+        if [[ -n "${DISPLAY:-}" && -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]] \
+           && command_exists xfconf-query; then
+            log_info "xfconfd não está rodando; tentando ativá-lo via D-Bus..."
+            xfconf-query -c xfce4-desktop -l &>/dev/null || true
+            sleep 1
+        fi
+        if ! pgrep -x xfconfd &>/dev/null; then
+            log_warn "xfconfd não está rodando e não pôde ser ativado."
+            log_warn "Certifique-se de estar em uma sessão XFCE ativa (ou exporte DISPLAY/DBUS)."
+            errors=$((errors + 1))
+        else
+            [[ "$QXDC_VERBOSE" == "true" ]] && log_info "xfconfd ativado com sucesso."
+        fi
     fi
 
     # Rodando como root sem SUDO_USER

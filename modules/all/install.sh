@@ -115,10 +115,17 @@ main() {
         # Log individual do módulo: captura stdout + stderr combinados
         local mod_log="$module_log_dir/${current}-${module_name}-${action}.log"
 
-        # Executa módulo com saída em tempo real (tee para log + terminal)
+        # Executa módulo com saída em tempo real (tee para log + terminal).
+        # IMPORTANTE: capturar PIPESTATUS[0] IMEDIATAMENTE após o pipe — qualquer
+        # comando intermediário (incl. um `|| ...`) reseta PIPESTATUS.
+        # O `set +e`/`set -e` em volta impede que `set -e`/`pipefail` (herdados de
+        # common.sh) abortem o loop quando um módulo falha: queremos registrar a
+        # falha, seguir os demais e reportar tudo no resumo final.
         local exit_code=0
-        QXDC_LOG="$QXDC_LOG" bash "$module_path" "${flags[@]}" 2>&1 | tee "$mod_log" || exit_code=${PIPESTATUS[0]}
-        exit_code=${PIPESTATUS[0]:-$exit_code}
+        set +e
+        QXDC_LOG="$QXDC_LOG" bash "$module_path" "${flags[@]}" 2>&1 | tee "$mod_log"
+        exit_code=${PIPESTATUS[0]}
+        set -e
 
         if [[ $exit_code -eq 0 ]]; then
             log_ok "[$current/$total] $mod concluído."

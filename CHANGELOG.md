@@ -9,6 +9,25 @@ Versionamento segue [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [2.6.1] - 2026-10-17
 
 ### Fixed
+- `modules/all/install.sh`: captura de exit code dos módulos corrigida. A
+  sequência `... | tee "$log" || exit_code=${PIPESTATUS[0]}` seguida de
+  `exit_code=${PIPESTATUS[0]:-...}` lia o `PIPESTATUS` **após** o `||`, sempre 0 —
+  módulos que falhavam (ex.: desktop sem sessão XFCE) eram reportados como
+  "concluído". Agora captura `PIPESTATUS[0]` imediatamente após o pipe, com
+  `set +e/-e` em volta para registrar a falha e seguir os demais módulos.
+- `lib/common.sh` (`check_desktop_session`): se `xfconfd` não está rodando mas
+  `DISPLAY`+`DBUS` estão presentes, tenta **ativá-lo via D-Bus** (serviço
+  activatable) antes de falhar. Permite rodar os módulos de desktop via SSH
+  (com ambiente exportado) sem um terminal aberto na sessão XFCE.
+- `modules/desktop/settings.sh`: leitura de `plugin-ids` do painel usava
+  `tr -d '[:space:]'`, que removia também as quebras de linha e concatenava os
+  IDs num número gigante (ex.: `1,2,3` → `123`), estourando o range de `gint32`
+  no `xfconf-query`. Troca por `sed` que remove só espaços/tabs laterais,
+  preservando um ID por linha.
+- `modules/dotfiles/deploy.sh`: adicionado mapa de destinos de sistema
+  (`DOTFILE_MAP_SYSTEM`) com suporte a sudo. A regra polkit `10-udisks2.rules`
+  (montagem de discos por `plugdev` sem senha) antes era pulada por "destino não
+  mapeado"; agora é instalada em `/etc/polkit-1/rules.d/`.
 - `lib/common.sh`: `log_info`/`log_ok`/`log_step` agora escrevem em **stderr**
   (antes stdout). Logs no stdout contaminavam funções que "retornam" valor via
   `echo` capturadas por `$(...)` — causava o `background=` do greeter receber
