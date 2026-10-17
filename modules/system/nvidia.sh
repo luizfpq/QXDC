@@ -127,9 +127,36 @@ install_prerequisites() {
     pkg_install "${prereqs[@]}"
 }
 
+# --- Reativar linha deb comentada do repo CUDA/NVIDIA ---
+# Procura em /etc/apt/sources.list.d/ por arquivos cuda*.list com a linha "deb"
+# comentada e a descomenta (com backup). Cobre o caso clássico de alguém ter
+# comentado o repo para "testar" e depois o driver sumir dos candidatos do apt.
+ensure_nvidia_repo_enabled() {
+    local changed=0
+    local f
+    for f in /etc/apt/sources.list.d/cuda*.list; do
+        [[ -f "$f" ]] || continue
+        if grep -qE '^[[:space:]]*#[[:space:]]*deb[[:space:]].*nvidia\.com' "$f"; then
+            log_warn "Repo NVIDIA comentado em $f — reativando (com backup)."
+            run_sudo cp "$f" "${f}.qxdc-bak.$(date +%Y%m%d%H%M%S)"
+            run_sudo sed -i 's|^[[:space:]]*#[[:space:]]*\(deb[[:space:]].*nvidia\.com.*\)|\1|' "$f"
+            changed=1
+        fi
+    done
+    if [[ "$changed" -eq 1 ]]; then
+        log_info "Atualizando índice de pacotes após reativar o repo..."
+        run_sudo apt-get update -qq
+    fi
+}
+
 # --- Adicionar repositório oficial NVIDIA ---
 setup_nvidia_repo() {
     log_step "Configurando repositório oficial NVIDIA"
+
+    # Mesmo com cuda-keyring instalado, a linha "deb" pode estar COMENTADA
+    # (ex.: usuário comentou tentando depurar). Detecta e reativa, senão o
+    # driver "some" dos candidatos do apt e a instalação falha silenciosamente.
+    ensure_nvidia_repo_enabled
 
     if has_nvidia_repo; then
         log_info "Repositório NVIDIA já configurado (cuda-keyring presente)."
@@ -201,6 +228,91 @@ EOF
     if command_exists update-initramfs; then
         log_info "Reconstruindo initramfs..."
         run_sudo update-initramfs -u
+    fi
+}
+
+# --- Detectar e neutralizar xorg.conf legado conflitante ---
+# Um /etc/X11/xorg.conf gerado por `nvidia-xconfig` (ou mão) costuma apontar
+# Driver "nvidia"/"nv" com ChipId 0x0 e SEM BusID válido. Se o driver não estiver
+# instalado/funcional, isso trava o Xorg em "Cannot run in framebuffer mode"
+# (tela preta). Este passo faz backup e remove o arquivo, deixando o Xorg usar
+# o autoconfig + o drop-in correto gerado por setup_nvidia_xorg().
+check_xorg_conflict() {
+    local xorg_conf="/etc/X11/xorg.conf"
+    [[ -f "$xorg_conf" ]] || return 0
+
+    if grep -qiE "nvidia-xconfig|ChipId[[:space:]]+0x0|Driver[[:space:]]+\"nv\"" "$xorg_conf" 2>/dev/null; then
+        log_warn "Detectado /etc/X11/xorg.conf legado (provável nvidia-xconfig)."
+        log_warn "Esse arquivo quebra o X se o driver não estiver 100% funcional (tela preta)."
+        local bkp="${xorg_conf}.qxdc-bak.$(date +%Y%m%d%H%M%S)"
+        log_info "Backup em $bkp e removendo o xorg.conf conflitante."
+        run_sudo cp "$xorg_conf" "$bkp"
+        run_sudo rm -f "$xorg_conf"
+    else
+        log_info "/etc/X11/xorg.conf existe e não parece conflitante; mantido."
+    fi
+}
+
+# --- Descobrir o BusID PCI da GPU NVIDIA no formato Xorg (PCI:bus:dev:func) ---
+# lspci dá "02:00.0" (hex); o Xorg espera "PCI:2:0:0" (decimal). Converte na mão.
+get_nvidia_xorg_busid() {
+    local pci
+    pci="$(lspci -d 10de:: 2>/dev/null | grep -iE "vga|3d" | head -1 | awk '{print $1}')"
+    [[ -z "$pci" ]] && return 1
+    local bus dev func
+    bus="$(printf '%d' "0x${pci%%:*}")"
+    local rest="${pci#*:}"
+    dev="$(printf '%d' "0x${rest%%.*}")"
+    func="$(printf '%d' "0x${rest##*.}")"
+    printf 'PCI:%d:%d:%d\n' "$bus" "$dev" "$func"
+}
+
+# --- Configurar Xorg para workstation com display na própria NVIDIA ---
+# Em desktops/workstations onde o monitor sai pelas saídas da placa NVIDIA
+# (dGPU dedicada, não Optimus de laptop), gera um drop-in mínimo e CORRETO em
+# /etc/X11/xorg.conf.d/ apontando o Driver nvidia no BusID real + habilita o
+# modeset do nvidia-drm. Isso evita que o usuário precise recorrer a
+# `nvidia-xconfig` (que gera um xorg.conf frágil). Só aplica no modo full/desktop.
+setup_nvidia_xorg() {
+    [[ "$NVIDIA_MODE" == "compute" ]] && return 0  # headless não precisa de X
+
+    local busid
+    busid="$(get_nvidia_xorg_busid)" || {
+        log_warn "Não foi possível determinar o BusID da NVIDIA; pulando config do Xorg."
+        return 0
+    }
+
+    local dropin="/etc/X11/xorg.conf.d/10-nvidia.conf"
+    log_info "Gerando drop-in do Xorg para a NVIDIA ($busid): $dropin"
+    run_sudo install -d /etc/X11/xorg.conf.d
+    run_sudo tee "$dropin" > /dev/null <<EOF
+# Gerado por QXDC — nvidia.sh
+# Workstation/desktop com saída de vídeo na própria GPU NVIDIA (dGPU dedicada).
+# Driver nvidia no BusID real + AllowEmptyInitialConfiguration (permite o X subir
+# mesmo sem monitor detectado no boot). NÃO use nvidia-xconfig manualmente — ele
+# gera um /etc/X11/xorg.conf frágil que pode causar tela preta.
+Section "Device"
+    Identifier     "nvidia"
+    Driver         "nvidia"
+    BusID          "$busid"
+    Option         "AllowEmptyInitialConfiguration" "true"
+EndSection
+
+Section "Screen"
+    Identifier     "nvidia-screen"
+    Device         "nvidia"
+EndSection
+EOF
+
+    # Habilitar modeset do nvidia-drm (recomendado p/ Wayland, PRIME e integração)
+    local modeset_conf="/etc/modprobe.d/nvidia-drm-modeset.conf"
+    if [[ ! -f "$modeset_conf" ]]; then
+        log_info "Habilitando nvidia-drm modeset=1."
+        run_sudo tee "$modeset_conf" > /dev/null <<EOF
+# Gerado por QXDC — nvidia.sh
+options nvidia-drm modeset=1
+EOF
+        command_exists update-initramfs && run_sudo update-initramfs -u
     fi
 }
 
@@ -334,11 +446,13 @@ main() {
         echo ""
         log_info "[DRY-RUN] Ações que seriam executadas:"
         log_info "  1. Instalar pré-requisitos: linux-headers-$(uname -r), wget, dkms"
-        log_info "  2. Baixar e instalar cuda-keyring (repo oficial NVIDIA)"
+        log_info "  2. Baixar e instalar cuda-keyring (repo oficial NVIDIA) + reativar repo se comentado"
         log_info "     URL: https://developer.download.nvidia.com/compute/cuda/repos/${distro_str}/x86_64/cuda-keyring_1.1-1_all.deb"
         log_info "  3. Blacklist nouveau"
-        log_info "  4. Instalar: $(get_install_packages)"
-        log_info "  5. Reboot necessário"
+        log_info "  4. Neutralizar /etc/X11/xorg.conf legado conflitante (se houver)"
+        log_info "  5. Instalar: $(get_install_packages)"
+        log_info "  6. Configurar Xorg p/ dGPU (drop-in 10-nvidia.conf + nvidia-drm modeset=1)"
+        log_info "  7. Reboot necessário"
         echo ""
         log_info "Para executar: remova --dry-run e adicione --yes (ou confirme interativamente)"
         return 0
@@ -369,7 +483,9 @@ main() {
     install_prerequisites || exit 1
     setup_nvidia_repo     || exit 1
     blacklist_nouveau     || exit 1
+    check_xorg_conflict   || exit 1
     install_driver        || exit 1
+    setup_nvidia_xorg     || exit 1
     post_install_summary
 }
 

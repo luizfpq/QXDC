@@ -6,6 +6,32 @@ Versionamento segue [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.6.1] - 2026-10-17
+
+### Fixed
+- `lib/common.sh`: `log_info`/`log_ok`/`log_step` agora escrevem em **stderr**
+  (antes stdout). Logs no stdout contaminavam funções que "retornam" valor via
+  `echo` capturadas por `$(...)` — causava o `background=` do greeter receber
+  `[INFO] Baixando: ...` junto do path e quebrar o parse do
+  `lightdm-gtk-greeter.conf` (tela de login sem wallpaper / warning no boot).
+- `desktop/wallpaper.sh`: `download_wallpaper` usa `printf` e documenta o
+  contrato stdout-only; `apply_login_wallpaper` valida que o caminho é um
+  arquivo único existente antes de gravar `background=` (blindagem do greeter).
+
+### Added
+- `system/nvidia.sh`: `ensure_nvidia_repo_enabled` detecta e reativa (com backup)
+  a linha `deb` do repo CUDA caso tenha sido comentada — evita o driver "sumir"
+  dos candidatos do apt e a instalação falhar silenciosamente.
+- `system/nvidia.sh`: `check_xorg_conflict` detecta `/etc/X11/xorg.conf` legado
+  (gerado por `nvidia-xconfig`: `ChipId 0x0`, `Driver "nv"`) que trava o X em
+  "Cannot run in framebuffer mode" (tela preta) e o neutraliza com backup.
+- `system/nvidia.sh`: `setup_nvidia_xorg` gera drop-in `10-nvidia.conf` correto
+  para workstation/desktop com saída de vídeo na própria dGPU (BusID real
+  convertido hex→decimal + `AllowEmptyInitialConfiguration`) e habilita
+  `nvidia-drm modeset=1`. Dispensa o uso manual de `nvidia-xconfig`.
+
+---
+
 ## [2.6.0] - 2026-10-08
 
 ### Added
